@@ -1,0 +1,73 @@
+#!/usr/bin/python
+
+
+###############################################
+# C.C. - jabber bot
+# Copyright (C) 2008 anonymous
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+###############################################
+
+import sys
+import os
+os.chdir(sys.path[0])
+
+from jabberbot import JabberBot
+
+
+# Change default settings and rename this file to C.C.
+user  = ('username@jabber.ru', 'password', 'Nickname')
+rooms = [ ('room1@conference.jabber.ru', ''),
+          ('room2@conference.jabber.org', 'room pass'),
+        ]
+owner = ('owner@jabber.ru', '')
+# You can set owner nick and send owner commands to bot in the
+# conference. Note that owner nick should be registered in order
+# to prevent illegal access.
+# owner = ('owner@jabber.ru', 'Owner_nick')
+
+
+def main():
+    bot = JabberBot(user, rooms, owner, logfile)
+    bot.load()
+    bot.process()
+
+
+def help():
+    help = ('Usage: %s [-d|-h|--help]' %sys.argv[0]) +\
+            '\n\n' +\
+            '-d         daemon\n' +\
+            '-h, --help help'
+    print(help)
+    sys.exit(1)
+
+
+logfile = '/dev/stdout'
+if len(sys.argv) > 1:
+    if sys.argv[1] == '-h' or sys.argv[1] == '--help':
+        help()
+
+    elif sys.argv[1] == '-d':
+        logfile = 'bot.log'
+
+        pid = os.fork()
+        if pid == 0:
+            os.setsid()
+            pid = os.fork()
+            if pid == 0:
+                main()
+    else:
+        help()
+else:
+    main()
