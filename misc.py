@@ -1,12 +1,9 @@
-import urllib2
 import re
+import urllib2
 from lxml import etree
-import socket
 
 
-headers = {}
-headers['User-Agent'] = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB;'+\
-                        'rv:1.8.0.4) Gecko/20060508 Firefox/1.5.0.4'
+url_re = re.compile('https?://[^ >]+')
 
 
 def force_unicode(string, encoding='utf-8'):
@@ -17,16 +14,17 @@ def force_unicode(string, encoding='utf-8'):
     return string
 
 
-def readUrl(url, cookies=None):
+request_headers = {
+    'User-Agent': ('Mozilla/5.0 (Windows NT 5.1; rv:8.0) '
+                   'Gecko/20100101 Firefox/8.0')
+}
+
+def readUrl(url):
+    request = urllib2.Request(url.encode('utf-8'), None, request_headers)
     try:
-        socket.setdefaulttimeout(5)
-        if cookies:
-            headers['Cookie'] = cookies
-        
-        request = urllib2.Request(url.encode('utf-8'), None, headers)
-        return urllib2.urlopen(request).read()
+        return urllib2.urlopen(request, None, 3).read()
     except:
-        return None
+        return ''
 
 
 def getImgXML(img_url, img_src):
@@ -42,19 +40,33 @@ def getImgXML(img_url, img_src):
            '</html>'
 
 
-def getTitle(link):
-    if re.search('^http://danbooru\.donmai\.us', link) or re.search('^http://(www\.)?gelbooru\.com', link):
-        return ''
-    else:
-        try:
-            data = readUrl(link)
-            try:     data_enc = data.decode('utf-8')
-            except:  data_enc = data.decode('cp1251')
-            return etree.HTML(data_enc).find('*//title').text.strip().replace('\t', '').replace('\n', ' ')
-        except:
-            return ''
+max_title_length = 150
+blacklisted_domains = (
+    'localhost', '127\.0\.0\.1',
+    'danbooru\.donmai\.us', 'gelbooru\.com', 'konachan\.com',
+)
+blacklisted_domains_re = map(
+    lambda d: re.compile('https?://(www\.)?' + d),
+    blacklisted_domains)
 
-def makeTiny(link):
-    url = 'http://tinyurl.com/api-create.php?url=%s' %link.encode('utf-8')
-    try: return readUrl(url)
-    except: return ''
+def getTitle(url):
+    for regexp in blacklisted_domains_re:
+        if regexp.match(url) is not None:
+            return
+    data = readUrl(url)
+    if not data: return
+    try:
+        data = data.decode('utf-8')
+    except:
+        try:
+            data = data.decode('cp1251')
+        except:
+            pass
+    try:
+        title = etree.HTML(data).find('.//title').text.strip()
+    except:
+        return
+    title = title.replace('\t', '').replace('\n', ' ')
+    if len(title) > max_title_length:
+        title = title[:max_title_length] + u'\u2026'
+    return title

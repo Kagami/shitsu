@@ -1,46 +1,37 @@
-# -*- coding: utf-8 -*-
-
-###############################################
-# Based on JabberBot by Thomas Perl <thp@thpinfo.com>
-# (http://thpinfo.com/2007/python-jabberbot/)
-###############################################
-
-import signal
-import xmpp
-import logging
 import os
-import re
 import imp
-import datetime
 import time
-import misc
-import radio
+import signal
 import random
+import logging
+import datetime
 from xml.sax.saxutils import escape, unescape
+import xmpp
+import misc
 
 
-class JabberBot:
+class JabberBot(object):
+
     reconnectTime = 30
 
-    def __init__(self, user, rooms, owner, logfile):
+    def __init__(self, user, rooms, owner):
         signal.signal(signal.SIGTERM, sigTermCB)
         signal.signal(signal.SIGHUP,  sigHupCB)
 
         self.jid = xmpp.JID(user[0])
         self.password = user[1]
         self.res = user[2]
-        self.rooms = rooms
+        self.rooms = list(rooms)
         self.owner = owner
         self.conn = None
         self.__finished = False
-
         self.iq = True
-        self.info = ''
         self.last = datetime.datetime(1, 1, 1)
 
-        logging.basicConfig(level=logging.DEBUG, filename=logfile, format='[%(asctime)s] [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-
-    ###############################################
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format='[%(asctime)s] [%(levelname)s] %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S')
 
     def load(self, bot=None, args=None):
         '''load\nLoad all modules.\nSee also: modprobe, rmmod, lsmod'''
@@ -114,11 +105,8 @@ class JabberBot:
         logging.info(info)
         return info
 
-    ###############################################
-
     def connect(self):
         if not self.conn:
-            #conn = xmpp.Client(self.jid.getDomain(), debug = ['always', 'nodebuilder'])
             conn = xmpp.Client(self.jid.getDomain(), debug = [])
 
             if not conn.connect():
@@ -150,7 +138,11 @@ class JabberBot:
         logging.info(msg)
 
     def _validate(self, text):
-        return escape(unescape(text, {'&quot;': '\'', '&#39;': '\'', '&#44;': ',', '&middot;': u'·'}))
+        return escape(unescape(text, {
+            '&quot;': '\'',
+            '&#39;': '\'',
+            '&#44;': ',',
+            '&middot;': u'\xb7'}))
 
     def send(self, user, type, text, extra = ''):
         self.conn.send(u'<message to="%s" type="%s"><body>%s</body>%s</message>' %(user, type, self._validate(text), extra))
@@ -188,29 +180,22 @@ class JabberBot:
         mfrm = mess.getFrom()
         user = mfrm.getStripped()
         prefix = mfrm.getResource()
-
-        if (not prefix) or (type == 'groupchat' and prefix == self.res):
-             return
-
         text = misc.force_unicode(mess.getBody())
+        if ((not prefix) or (type == 'groupchat' and prefix == self.res) or
+            (not text)):
+            return
+
         # Checking command
-        if text:
-            if text[0] == '%':
-                text = text[1:]
-            elif type == 'groupchat' and not text.startswith('%show') and re.search('http://[^ ]+', text):
-                link = re.findall('(http://[^ ]+)', text)[0]
-                title = misc.getTitle(link)
-                if title:
-                    if re.search('http://(www\.)?youtube.com/', link) and re.search('[rR][iI][cC][kK]', title):
-                        self.send(user, type, u'%s — там рикролл!!!' %link)
-                    else:
-                        tiny = ''
-                        if len(link) > 70: tiny = ' ( %s )' %misc.makeTiny(link)
-                        self.send(user, type, u'Title: %s%s' %(title, tiny))
-                return
-            else:
-                return
+        if text[0] == '%':
+            text = text[1:]
         else:
+            if type == 'groupchat':
+                url_match = misc.url_re.search(text)
+                if url_match is not None:
+                    url = url_match.group()
+                    title = misc.getTitle(url)
+                    if title:
+                        self.send(user, type, 'Title: ' + title)
             return
 
         # Parsing command

@@ -1,7 +1,7 @@
-import radio
+import misc
 
 def main(bot, args):
-    if args: return
+    """show <url>\nShow img by url."""
 
-    info, list = radio.getRadioState()
-    return u'%s %s' %(info, list)
+    if len(args) == 1:
+        return args[0], misc.getImgXML(args[0], args[0])
