@@ -1,6 +1,6 @@
 import urllib
 import misc
-from simplejson import loads
+from json import loads
 
 def main(bot, args):
     '''wtf [text]\nDetect text language or show avialable languages if no text given.\nSee also: tr'''

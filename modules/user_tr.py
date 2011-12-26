@@ -1,6 +1,6 @@
 import urllib
 import misc
-from simplejson import loads
+from json import loads
 
 def main(bot, args):
     '''tr <from_lang> <to_lang> <text>\nTranslate text.\nSee also: wtf'''

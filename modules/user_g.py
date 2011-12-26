@@ -1,7 +1,7 @@
 import urllib
 import re
 import misc
-from simplejson import loads
+from json import loads
 
 def main(bot, args):
     '''g [site] <query>\nSearch on google.\nSite:
