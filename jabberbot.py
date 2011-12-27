@@ -16,6 +16,7 @@ except ImportError:
     sys.path.insert(0, path)
     import xmpp
 import misc
+sys.path.insert(0, "modules")
 
 
 class JabberBot(object):
@@ -66,8 +67,8 @@ class JabberBot(object):
 
         if len(args) != 1: return
 
-        name1 = 'modules/user_%s' %args[0]
-        name2 = 'modules/owner_%s' %args[0]
+        name1 = 'user_%s' %args[0]
+        name2 = 'owner_%s' %args[0]
 
         user = None
         try:
