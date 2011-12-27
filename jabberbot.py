@@ -24,7 +24,12 @@ class JabberBot(object):
 
     def __init__(self, user, rooms, owner):
         signal.signal(signal.SIGTERM, sigTermCB)
-        signal.signal(signal.SIGHUP,  sigHupCB)
+        try:
+            signal.signal(signal.SIGHUP,  sigHupCB)
+        except AttributeError:
+            # Don't work on Windows and maybe some other OSes.
+            # TODO: More graceful check?
+            pass
 
         self.jid = xmpp.JID(user[0])
         self.password = user[1]
