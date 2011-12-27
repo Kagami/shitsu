@@ -12,11 +12,11 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 try:
     import xmpp
 except ImportError:
-    path = os.path.join(os.path.dirname(__file__), "lib")
+    path = os.path.join(os.path.dirname(__file__), 'lib')
     sys.path.insert(0, path)
     import xmpp
 import misc
-sys.path.insert(0, "modules")
+sys.path.insert(0, 'modules')
 
 
 class JabberBot(object):
