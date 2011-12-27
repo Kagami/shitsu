@@ -1,6 +1,9 @@
 import re
 import urllib2
-from lxml import etree
+try:
+    from lxml import etree
+except ImportError:
+    pass
 
 
 url_re = re.compile('https?://[^ >]+')

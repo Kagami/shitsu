@@ -1,4 +1,5 @@
 import os
+import sys
 import imp
 import time
 import signal
@@ -6,7 +7,14 @@ import random
 import logging
 import datetime
 from xml.sax.saxutils import escape, unescape
-import xmpp
+import warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+try:
+    import xmpp
+except ImportError:
+    path = os.path.join(os.path.dirname(__file__), "lib")
+    sys.path.insert(0, path)
+    import xmpp
 import misc
 
 
