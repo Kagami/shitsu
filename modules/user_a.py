@@ -1,7 +1,7 @@
 import re
 import datetime
 from lxml import etree
-import misc
+import utils
 
 
 def main(bot, args):
@@ -11,9 +11,9 @@ def main(bot, args):
     now = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
     url = 'http://animecalendar.net/%d/%d/%d' % (
         now.year, now.month, now.day)
-    data = misc.readUrl(url)
+    data = utils.readUrl(url)
     if not data:
-        return 'can\'t get data'
+        return "can't get data"
 
     tree = etree.HTML(data)
     time_str = ' ; now: %02d:%02d (UTC+9)' % (now.hour, now.minute)

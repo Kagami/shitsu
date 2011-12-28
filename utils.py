@@ -61,3 +61,8 @@ def getTitle(url):
     if len(title) > max_title_length:
         title = title[:max_title_length] + u'\u2026'
     return title
+
+
+def trim(docstring):
+    docstring = docstring.strip()
+    return u"\n".join([line.strip() for line in docstring.splitlines()])

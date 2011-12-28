@@ -37,7 +37,7 @@ except ImportError:
     path = os.path.join(os.path.dirname(__file__), 'lib')
     sys.path.insert(0, path)
     import xmpp
-import misc
+import utils
 sys.path.insert(0, 'modules')
 import config
 
@@ -71,23 +71,29 @@ class CC(object):
             datefmt='%Y-%m-%d %H:%M:%S')
 
     def load(self, bot=None, args=None):
-        '''load\nLoad all modules.\nSee also: modprobe, rmmod, lsmod'''
-
+        """load
+        Load all modules.
+        See also: modprobe, rmmod, lsmod
+        """
         if args: return
-
         self.userCommands  = {}
-        self.ownerCommands = {'load': self.load, 'modprobe': self.modprobe, 'rmmod': self.rmmod}
-
+        self.ownerCommands = {
+            'load': self.load,
+            'modprobe': self.modprobe,
+            'rmmod': self.rmmod,
+        }
         for file in os.listdir('modules'):
-            if file.endswith('.py') and (file.startswith('user_') or file.startswith('owner_')):
-                pos = file.index('_') + 1
-                self.modprobe(self, [file[pos:-3]])
-
+            if (file.endswith('.py') and
+                (file.startswith('user_') or file.startswith('owner_'))):
+                    pos = file.index('_') + 1
+                    self.modprobe(self, [file[pos:-3]])
         return 'done'
 
     def modprobe(self, bot, args):
-        '''modprobe <module>\nLoads module.\nSee also: load, rmmod, lsmod'''
-
+        """modprobe <module>
+        Loads module.
+        See also: load, rmmod, lsmod
+        """
         if len(args) != 1: return
 
         name1 = 'user_%s' %args[0]
@@ -103,14 +109,14 @@ class CC(object):
                 file, pathname, description = imp.find_module(name2)
                 name = name2
             except:
-                error = 'MODULE: %s not found' %args[0]
+                error = "MODULE: %s not found" % args[0]
                 logging.error(error)
                 return error
 
         try:
             method = imp.load_module(name, file, pathname, description).main
         except:
-            error = 'MODULE: can\'t load %s' %args[0]
+            error = "MODULE: can't load %s" %args[0]
             logging.error(error)
             return error
         else:
@@ -119,26 +125,28 @@ class CC(object):
             else:
                 self.ownerCommands[args[0]] = method
 
-        info = 'MODULE: %s loaded' %args[0]
+        info = "MODULE: %s loaded" %args[0]
         logging.info(info)
         return info
 
     def rmmod(self, bot, args):
-        '''rmmod <module>\nRemove module.\nSee also: load, modprobe, lsmod'''
-
+        """rmmod <module>
+        Remove module.
+        See also: load, modprobe, lsmod
+        """
         if len(args) != 1: return
 
         if args[0] == 'load' or args[0] == 'modprobe' or args[0] == 'rmmod':
-            return 'MODULE: can\'t remove %s' %args[0]
+            return "MODULE: can't remove %s" %args[0]
 
         if self.userCommands.has_key(args[0]):
             del self.userCommands[args[0]]
         elif self.ownerCommands.has_key(args[0]):
             del self.ownerCommands[args[0]]
         else:
-            return 'MODULE: %s not loaded' %args[0]
+            return "MODULE: %s not loaded" %args[0]
 
-        info = 'MODULE: %s removed' %args[0]
+        info = "MODULE: %s removed" %args[0]
         logging.info(info)
         return info
 
@@ -206,12 +214,12 @@ class CC(object):
             if room[0] == jid:
                 return True
 
-    def messageCB(self, conn, mess):
-        type = mess.getType()
-        mfrm = mess.getFrom()
+    def messageCB(self, cl, msg):
+        type = msg.getType()
+        mfrm = msg.getFrom()
         user = mfrm.getStripped()
         prefix = mfrm.getResource()
-        text = misc.force_unicode(mess.getBody())
+        text = utils.force_unicode(msg.getBody())
         if ((not prefix) or (type == 'groupchat' and prefix == self.res) or
             (not text)):
             return
@@ -221,10 +229,10 @@ class CC(object):
             text = text[1:]
         else:
             if type == 'groupchat':
-                url_match = misc.url_re.search(text)
+                url_match = utils.url_re.search(text)
                 if url_match is not None:
                     url = url_match.group()
-                    title = misc.getTitle(url)
+                    title = utils.getTitle(url)
                     if title:
                         self.send(user, type, 'Title: ' + title)
             return
@@ -296,17 +304,20 @@ class CC(object):
                 msg, extra = 'invalid syntax', ''
 
         if msg:
-            self.send(user, type, prefix + misc.force_unicode(msg), extra)
+            self.send(user, type, prefix + utils.force_unicode(msg), extra)
 
     def presenceCB(self, conn, pres):
         if pres.getType() == 'subscribe' and pres.getFrom().getStripped() == self.owner[0]:
             self.conn.send(xmpp.Presence(to=pres.getFrom(), typ='subscribed'))
 
-        if pres.getFrom().getResource() == self.res and pres.getType() == 'unavailable' and pres.getStatus() == 'Replaced by new connection':
-            user = pres.getFrom().getStripped()
-            for room in self.rooms:
-                if user == room[0]:
-                    self._join_presence(*room)
+        # TODO: WTF?
+        if (pres.getFrom().getResource() == self.res and
+            pres.getType() == 'unavailable' and
+            pres.getStatus() == 'Replaced by new connection'):
+                user = pres.getFrom().getStripped()
+                for room in self.rooms:
+                    if user == room[0]:
+                        self._join_presence(*room)
 
     def iqCB(self, conn, iq_node):
         self.iq = iq_node

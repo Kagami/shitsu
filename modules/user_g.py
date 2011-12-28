@@ -1,21 +1,23 @@
 import urllib
 import re
-import misc
+import utils
 from json import loads
 
-def main(bot, args):
-    '''g [site] <query>\nSearch on google.\nSite:
-v - ru.wikipedia.org
-w - en.wikipedia.org
-lm - lurkmore
-wa - world-art.ru
-ad - anidb.info
-ed - encyclopediadramatica
-y - youtube.com'''
 
+def main(bot, args):
+    """g [site] <query>
+    Search on google.
+    Available sites shortcuts:
+    v - ru.wikipedia.org
+    w - en.wikipedia.org
+    lm - lurkmore
+    wa - world-art.ru
+    ad - anidb.info
+    ed - encyclopediadramatica
+    y - youtube.com
+    """
     if not args: return
 
-    site = ''
     if args[0] == 'v':
         site = 'ru.wikipedia.org'
     elif args[0] == 'w':
@@ -30,18 +32,21 @@ y - youtube.com'''
         site = 'encyclopediadramatica.com'
     elif args[0] == 'y':
         site = 'youtube.com'
-
+    else:
+        site = ''
     if site:
-        if len(args) == 1: return
-        site = 'site:%s ' %site
+        if len(args) == 1:
+            return
+        site = 'site:%s ' % site
         args = args[1:]
 
     return google(site + ' '.join(args))
 
+
 def google(query):
     query = urllib.quote(query.encode('utf-8'))
-    data = misc.readUrl('http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=%s&hl=ru' %query)
-    if not data: return 'can\'t get data'
+    data = utils.readUrl('http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=%s&hl=ru' %query)
+    if not data: return "can't get data"
 
     try:
         convert = loads(data)
