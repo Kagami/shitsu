@@ -1,5 +1,6 @@
 import re
 import urllib2
+# TODO: Use python's standart htmlparser?
 try:
     from lxml import etree
 except ImportError:

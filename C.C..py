@@ -27,6 +27,7 @@ import signal
 import random
 import logging
 import datetime
+import traceback
 from xml.sax.saxutils import escape, unescape
 import warnings
 warnings.filterwarnings('ignore', category=DeprecationWarning)
@@ -143,28 +144,22 @@ class CC(object):
 
     def connect(self):
         if not self.conn:
-            conn = xmpp.Client(self.jid.getDomain(), debug = [])
-
-            if not conn.connect():
+            self.conn = xmpp.Client(self.jid.getDomain(), debug = [])
+            if not self.conn.connect():
                 logging.error('CONNECTION: unable to connect to server')
                 return
-
-            if not conn.auth(self.jid.getNode(), self.password, self.res):
+            if not self.conn.auth(self.jid.getNode(), self.password, self.res):
                 logging.error('CONNECTION: unable to authorize with server')
                 return
-
             for room in self.rooms:
-                self._join_presence(conn, room[0], room[1])
-
-            conn.RegisterHandler('message', self.messageCB)
-            conn.RegisterHandler('presence', self.presenceCB)
-            conn.RegisterHandler('iq', self.iqCB, typ='result', ns=xmpp.NS_TIME)
-            conn.sendInitPresence()
-
-            self.conn = conn
+                self._join_presence(*room)
+            self.conn.RegisterHandler('message', self.messageCB)
+            self.conn.RegisterHandler('presence', self.presenceCB)
+            self.conn.RegisterHandler('iq', self.iqCB, ns=xmpp.NS_TIME)
+            self.conn.sendPresence()
             return True
 
-    def exit(self, msg = 'exit'):
+    def exit(self, msg='exit'):
         if self.conn:
             for room in self.rooms:
                 self.leave(room)
@@ -173,45 +168,45 @@ class CC(object):
         self.__finished = True
         logging.info(msg)
 
-    def _validate(self, text):
-        return escape(unescape(text, {
-            '&quot;': '\'',
-            '&#39;': '\'',
-            '&#44;': ',',
-            '&middot;': u'\xb7'}))
+    def send(self, to, type_, text, extra=None):
+        msg = xmpp.Message(to=to, typ=type_, body=text)
+        if extra:
+            xhtml = xmpp.Node(xmpp.NS_XHTML_IM + ' html')
+            body = xmpp.Node('http://www.w3.org/1999/xhtml body')
+            body.setPayload([extra])
+            xhtml.setPayload([body])
+            msg.addChild(node=xhtml)
+        self.conn.send(msg)
 
-    def send(self, user, type, text, extra = ''):
-        self.conn.send(u'<message to="%s" type="%s"><body>%s</body>%s</message>' %(user, type, self._validate(text), extra))
-
-    def _join_presence(self, conn, room, password=None):
+    def _join_presence(self, to, password=None):
+        x = xmpp.Node(xmpp.NS_MUC+' x')
         if password:
-            conn.send('<presence to=\'%s/%s\'><x xmlns=\'http://jabber.org/protocol/muc\'><password>%s</password></x></presence>'
-                      %(room, self.res, password))
-        else:
-            conn.send(xmpp.Presence(to='%s/%s' %(room, self.res)))
+            x.addChild('password', payload=password)
+        x.addChild('history', attrs={'maxstanzas': '0'})
+        room_jid = '%s/%s' % (to, self.res)
+        self.conn.send(xmpp.Presence(to=room_jid, payload=[x]))
 
     def join(self, room):
         if not room in self.rooms:
-            self._join_presence(self.conn, room[0], room[1])
+            self._join_presence(*room)
             self.rooms.append(room)
             return True
 
     def leave(self, room):
         if room in self.rooms:
-            self.conn.send(xmpp.Presence(to='%s/%s' %(room[0], self.res), typ='unavailable', status='offline'))
+            room_jid = '%s/%s' % (room[0], self.res)
+            prs = xmpp.Presence(
+                to=room_jid, typ='unavailable', status='offline')
+            self.conn.send(prs)
             self.rooms.remove(room)
             return True
 
-    def _inRoom(self, user):
+    def _is_from_room(self, jid):
         for room in self.rooms:
-            if room[0] == user:
+            if room[0] == jid:
                 return True
 
     def messageCB(self, conn, mess):
-        # Just a history
-        if mess.getTimestamp():
-            return
-
         type = mess.getType()
         mfrm = mess.getFrom()
         user = mfrm.getStripped()
@@ -241,23 +236,31 @@ class CC(object):
         else:
             return
 
-        if self._inRoom(user):
-            owner = prefix == self.owner[1]     # Msg from room
+        if self._is_from_room(user):
+            # Message from room.
+            if self.owner[1]:
+                owner = prefix == self.owner[1]
+            else:
+                owner = False
         else:
-            owner = user == self.owner[0]       # Msg from jid
+            # Message to bot's jid.
+            owner = user == self.owner[0]
 
         if type == 'groupchat':
             if '>' in args:
-                index  = args.index('>')        # Redirect (>)
+                # Redirect output.
+                index  = args.index('>')
                 prefix = ''
                 redir  = ' '.join(args[index+1:])
                 if redir:
                     prefix = redir + ', '
                 args   = args[:index]
             else:
-                prefix += ', '                  # Groupchat => prefix
+                # Groupchat => prefix
+                prefix += ', '
         else:
-            user, prefix = mfrm, ''             # Chat => no prefix
+            # Chat => no prefix
+            user, prefix = mfrm, ''
 
         # Executing command
         error = None
@@ -281,7 +284,7 @@ class CC(object):
 
         if error:
             error = 'MODULE: exception in %s' %(cmd)
-            logging.error(error)
+            logging.error(error + "\n" + traceback.format_exc()[:-1])
             msg, extra = error, ''
         else:
             if result:
@@ -292,7 +295,6 @@ class CC(object):
             else:
                 msg, extra = 'invalid syntax', ''
 
-        # Replying
         if msg:
             self.send(user, type, prefix + misc.force_unicode(msg), extra)
 
@@ -304,7 +306,7 @@ class CC(object):
             user = pres.getFrom().getStripped()
             for room in self.rooms:
                 if user == room[0]:
-                    self._join_presence(self.conn, room[0], room[1])
+                    self._join_presence(*room)
 
     def iqCB(self, conn, iq_node):
         self.iq = iq_node

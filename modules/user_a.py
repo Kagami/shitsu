@@ -33,11 +33,8 @@ def main(bot, args):
             line = '<span style="font-weight: bold;">%s</span>' % line
         anime_list_xhtml.append(line)
 
-    xhtml = (
-        '<html xmlns="http://jabber.org/protocol/xhtml-im">'
-        '<body xmlns="http://www.w3.org/1999/xhtml">'
-        '%s</body></html>' % u'<br />'.join(anime_list_xhtml))
-    return u'\n'.join(anime_list), xhtml
+    # TODO: Use xmpp.Node
+    return u'\n'.join(anime_list), u'<br />'.join(anime_list_xhtml)
 
 
 if __name__ == '__main__':
