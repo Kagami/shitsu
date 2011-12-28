@@ -28,7 +28,7 @@ class JabberBot(object):
         try:
             signal.signal(signal.SIGHUP,  sigHupCB)
         except AttributeError:
-            # Don't work on Windows and maybe some other OSes.
+            # Don't work on Windows and maybe on some other OSes.
             # TODO: More graceful check?
             pass
 
