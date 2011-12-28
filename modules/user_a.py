@@ -5,7 +5,10 @@ import utils
 
 
 def main(bot, args):
-    '''a\nShow anime list airing today (timezone UTC+9).'''
+    """a
+    Show anime list airing today (timezone UTC+9).
+    Source: http://animecalendar.net/
+    """
     if args: return
 
     now = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
@@ -33,7 +36,6 @@ def main(bot, args):
             line = '<span style="font-weight: bold;">%s</span>' % line
         anime_list_xhtml.append(line)
 
-    # TODO: Use xmpp.Node
     return u'\n'.join(anime_list), u'<br />'.join(anime_list_xhtml)
 
 
