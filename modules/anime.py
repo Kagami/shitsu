@@ -3,7 +3,6 @@ import datetime
 # TODO: Use python's standart htmlparser.
 from lxml import etree
 import modules
-import utils
 
 
 class Module(modules.MessageModule):
@@ -18,7 +17,7 @@ class Module(modules.MessageModule):
         now = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
         url = "http://animecalendar.net/%d/%d/%d" % (
             now.year, now.month, now.day)
-        data = utils.readUrl(url)
+        data = self.get_utils().get_url(url)
         if not data:
             return "can't get data"
 

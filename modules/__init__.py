@@ -29,12 +29,23 @@ ACL_ANY = ACL(0, "any")
 ACL_OWNER = ACL(7, "owner")
 
 
-class MessageModule(object):
+class BaseModule(object):
+
+    name = None  # Module name (if not specified get it from file name).
+
+    def __init__(self, module_name, bot):
+        self.name = self.name if self.name else module_name
+        self._bot = bot
+
+    def get_utils(self):
+        return self._bot.modules["utils"]
+
+
+class MessageModule(BaseModule):
     """Base class for message modules."""
 
     prefix = "%"  # TODO: Set it via config.
     use_prefix = True  # Should command be prefixed.
-    name = None  # Module name (if not specified get it from file name).
     acl = ACL_ANY  # Minimum access level required to use command.
     re = None  # Command regexp (if not specified match by name).
     raw_query = False  # If true module will get raw query string.
@@ -42,8 +53,7 @@ class MessageModule(object):
                # Empty list means any number.
 
     def __init__(self, module_name, bot):
-        self._bot = bot
-        self.name = self.name if self.name else module_name
+        super(MessageModule, self).__init__(module_name, bot)
         if self.re is not None:
             self.rec = re.compile(self.re)
         else:
