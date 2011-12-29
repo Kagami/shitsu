@@ -10,6 +10,7 @@ class Module(modules.MessageModule):
 
     re = r"(https?://[^ >]+)"
     types = ("groupchat",)
+    highlight = False
 
     max_title_length = 150
     blacklisted_domains = (
@@ -42,4 +43,4 @@ class Module(modules.MessageModule):
         title = title.replace("\t", "").replace("\n", " ")
         if len(title) > self.max_title_length:
             title = title[:self.max_title_length] + u"…"
-        return title
+        return "Title: " + title

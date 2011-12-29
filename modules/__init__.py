@@ -53,6 +53,7 @@ class MessageModule(BaseModule):
     raw_query = False  # If true module will get raw query string.
     args = ()  # List of correct arguments number. (1, 3) means 1 or 3.
                # Empty list means any number.
+    highlight = True  # Highlight users in groupchats with command's result.
 
     def __init__(self, module_name, bot):
         super(MessageModule, self).__init__(module_name, bot)
@@ -142,12 +143,13 @@ class MessageModule(BaseModule):
         from_ = msg.getFrom()
         from_jid = from_.getStripped()
         resource = from_.getResource()
+        prefix = ""
         if type_ == "chat":
             to = from_
-            prefix = ""
         else:
             to = from_jid
-            prefix = resource + ", "
+            if self.highlight:
+                prefix = resource + ", "
         body = prefix + body
         self._bot.send_message(to, type_, body, xhtml_body)
 
