@@ -24,11 +24,8 @@ os.chdir(sys.path[0])
 import imp
 import time
 import signal
-import random
 import logging
-import datetime
 import traceback
-from xml.sax.saxutils import escape, unescape
 import warnings
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 try:
@@ -44,31 +41,22 @@ import config
 
 class CC(object):
 
-    reconnectTime = 30
+    RECONNECT_TIME = 30
 
     def __init__(self, user, rooms, owner):
-        signal.signal(signal.SIGTERM, sigTermCB)
-        try:
-            signal.signal(signal.SIGHUP,  sigHupCB)
-        except AttributeError:
-            # Don't work on Windows and maybe on some other OSes.
-            # TODO: More graceful check?
-            pass
-
+        self._done = False
+        self.cl = None
         self.jid = xmpp.JID(user[0])
         self.password = user[1]
         self.res = user[2]
         self.rooms = list(rooms)
         self.owner = owner
-        self.conn = None
-        self.__finished = False
-        self.iq = True
-        self.last = datetime.datetime(1, 1, 1)
 
         logging.basicConfig(
             level=logging.DEBUG,
             format='[%(asctime)s] [%(levelname)s] %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S')
+        signal.signal(signal.SIGTERM, sigterm_handler)
 
     def load(self, bot=None, args=None):
         """load
@@ -91,7 +79,7 @@ class CC(object):
 
     def modprobe(self, bot, args):
         """modprobe <module>
-        Loads module.
+        Load module.
         See also: load, rmmod, lsmod
         """
         if len(args) != 1: return
@@ -116,7 +104,7 @@ class CC(object):
         try:
             method = imp.load_module(name, file, pathname, description).main
         except:
-            error = "MODULE: can't load %s" %args[0]
+            error = "MODULE: can't load %s" % args[0]
             logging.error(error)
             return error
         else:
@@ -125,7 +113,7 @@ class CC(object):
             else:
                 self.ownerCommands[args[0]] = method
 
-        info = "MODULE: %s loaded" %args[0]
+        info = "MODULE: %s loaded" % args[0]
         logging.info(info)
         return info
 
@@ -137,46 +125,70 @@ class CC(object):
         if len(args) != 1: return
 
         if args[0] == 'load' or args[0] == 'modprobe' or args[0] == 'rmmod':
-            return "MODULE: can't remove %s" %args[0]
+            return "MODULE: can't remove %s" % args[0]
 
         if self.userCommands.has_key(args[0]):
             del self.userCommands[args[0]]
         elif self.ownerCommands.has_key(args[0]):
             del self.ownerCommands[args[0]]
         else:
-            return "MODULE: %s not loaded" %args[0]
+            return "MODULE: %s not loaded" % args[0]
 
-        info = "MODULE: %s removed" %args[0]
+        info = "MODULE: %s removed" % args[0]
         logging.info(info)
         return info
 
+    def run(self):
+        self.load()
+        while not self._done:
+            try:
+                if self.cl is None:
+                    if self.connect():
+                        logging.info('CONNECTION: bot connected')
+                    else:
+                        time.sleep(self.RECONNECT_TIME)
+                else:
+                    self.cl.Process(1)
+            except xmpp.protocol.XMLNotWellFormed:
+                logging.error('CONNECTION: reconnect (detected not valid XML)')
+                self.cl = None
+            except (KeyboardInterrupt, SystemExit):
+                self.exit('EXIT: interrupted by SIGTERM')
+
     def connect(self):
-        if not self.conn:
-            self.conn = xmpp.Client(self.jid.getDomain(), debug = [])
-            if not self.conn.connect():
-                logging.error('CONNECTION: unable to connect to server')
-                return
-            if not self.conn.auth(self.jid.getNode(), self.password, self.res):
-                logging.error('CONNECTION: unable to authorize with server')
-                return
-            for room in self.rooms:
-                self._join_presence(*room)
-            self.conn.RegisterHandler('message', self.messageCB)
-            self.conn.RegisterHandler('presence', self.presenceCB)
-            self.conn.RegisterHandler('iq', self.iqCB, ns=xmpp.NS_TIME)
-            self.conn.sendPresence()
-            return True
+        self.cl = xmpp.Client(self.jid.getDomain(), debug = [])
+        if not self.cl.connect():
+            logging.error('CONNECTION: unable to connect to server')
+            return
+        if not self.cl.auth(self.jid.getNode(), self.password, self.res):
+            logging.error('CONNECTION: unable to authorize with server')
+            return
+        for room in self.rooms:
+            self.send_join(*room)
+        self.cl.RegisterHandler('message', self.message_handler)
+        self.cl.RegisterHandler('presence', self.presence_handler)
+        self.cl.sendPresence()
+        return True
 
     def exit(self, msg='exit'):
-        if self.conn:
-            for room in self.rooms:
-                self.leave(room)
-            self.conn = None
-
-        self.__finished = True
+        if self.cl is None:
+            return
+        for room in self.rooms:
+            self.leave(room)
+        try:
+            self.cl.disconnect()
+        except AttributeError:
+            # TODO: Why does this happen on disconnect?
+            # %%C.O.: xmpppy is crap%%
+            pass
         logging.info(msg)
+        self._done = True
 
-    def send(self, to, type_, text, extra=None):
+    def send(self, stanza):
+        if not self._done:
+            self.cl.send(stanza)
+
+    def send_message(self, to, type_, text, extra=None):
         msg = xmpp.Message(to=to, typ=type_, body=text)
         if extra:
             xhtml = xmpp.Node(xmpp.NS_XHTML_IM + ' html')
@@ -184,19 +196,19 @@ class CC(object):
             body.setPayload([extra])
             xhtml.setPayload([body])
             msg.addChild(node=xhtml)
-        self.conn.send(msg)
+        self.send(msg)
 
-    def _join_presence(self, to, password=None):
+    def send_join(self, to, password=None):
         x = xmpp.Node(xmpp.NS_MUC+' x')
         if password:
             x.addChild('password', payload=password)
         x.addChild('history', attrs={'maxstanzas': '0'})
         room_jid = '%s/%s' % (to, self.res)
-        self.conn.send(xmpp.Presence(to=room_jid, payload=[x]))
+        self.send(xmpp.Presence(to=room_jid, payload=[x]))
 
     def join(self, room):
         if not room in self.rooms:
-            self._join_presence(*room)
+            self.send_join(*room)
             self.rooms.append(room)
             return True
 
@@ -205,46 +217,46 @@ class CC(object):
             room_jid = '%s/%s' % (room[0], self.res)
             prs = xmpp.Presence(
                 to=room_jid, typ='unavailable', status='offline')
-            self.conn.send(prs)
+            self.send(prs)
             self.rooms.remove(room)
             return True
 
-    def _is_from_room(self, jid):
+    def is_from_room(self, jid):
         for room in self.rooms:
             if room[0] == jid:
                 return True
 
-    def messageCB(self, cl, msg):
-        type = msg.getType()
-        mfrm = msg.getFrom()
-        user = mfrm.getStripped()
-        prefix = mfrm.getResource()
+    def message_handler(self, cl, msg):
+        type_ = msg.getType()
+        from_ = msg.getFrom()
+        user = from_.getStripped()
+        prefix = from_.getResource()
         text = utils.force_unicode(msg.getBody())
-        if ((not prefix) or (type == 'groupchat' and prefix == self.res) or
+        if ((not prefix) or (type_ == 'groupchat' and prefix == self.res) or
             (not text)):
             return
 
-        # Checking command
+        # Check command.
         if text[0] == '%':
             text = text[1:]
         else:
-            if type == 'groupchat':
+            if type_ == 'groupchat':
                 url_match = utils.url_re.search(text)
                 if url_match is not None:
                     url = url_match.group()
                     title = utils.getTitle(url)
                     if title:
-                        self.send(user, type, 'Title: ' + title)
+                        self.send_message(user, type_, 'Title: ' + title)
             return
 
-        # Parsing command
+        # Parse command.
         spl = text.split()
         if spl:
             cmd, args = spl[0], spl[1:]
         else:
             return
 
-        if self._is_from_room(user):
+        if self.is_from_room(user):
             # Message from room.
             if self.owner[1]:
                 owner = prefix == self.owner[1]
@@ -254,7 +266,7 @@ class CC(object):
             # Message to bot's jid.
             owner = user == self.owner[0]
 
-        if type == 'groupchat':
+        if type_ == 'groupchat':
             if '>' in args:
                 # Redirect output.
                 index  = args.index('>')
@@ -268,9 +280,9 @@ class CC(object):
                 prefix += ', '
         else:
             # Chat => no prefix
-            user, prefix = mfrm, ''
+            user, prefix = from_, ''
 
-        # Executing command
+        # Execute command.
         error = None
         if self.userCommands.has_key(cmd):
             try:
@@ -286,13 +298,11 @@ class CC(object):
             else:
                 result = 'access denied'
         else:
-            return #result = 'command not found: %s' %(cmd)
-
-        if self.__finished: return
+            return
 
         if error:
             error = 'MODULE: exception in %s' %(cmd)
-            logging.error(error + "\n" + traceback.format_exc()[:-1])
+            logging.error(error + '\n' + traceback.format_exc()[:-1])
             msg, extra = error, ''
         else:
             if result:
@@ -304,73 +314,21 @@ class CC(object):
                 msg, extra = 'invalid syntax', ''
 
         if msg:
-            self.send(user, type, prefix + utils.force_unicode(msg), extra)
+            self.send_message(
+                user, type_,
+                prefix + utils.force_unicode(msg), extra)
 
-    def presenceCB(self, conn, pres):
-        if pres.getType() == 'subscribe' and pres.getFrom().getStripped() == self.owner[0]:
-            self.conn.send(xmpp.Presence(to=pres.getFrom(), typ='subscribed'))
-
-        # TODO: WTF?
-        if (pres.getFrom().getResource() == self.res and
-            pres.getType() == 'unavailable' and
-            pres.getStatus() == 'Replaced by new connection'):
-                user = pres.getFrom().getStripped()
-                for room in self.rooms:
-                    if user == room[0]:
-                        self._join_presence(*room)
-
-    def iqCB(self, conn, iq_node):
-        self.iq = iq_node
-
-    def process(self):
-        while not self.__finished:
-            try:
-                self.checkReconnect()
-
-                if self.conn:
-                    self.conn.Process(1)
-                else:
-                    if self.connect():
-                        logging.info('CONNECTION: bot connected')
-                    else:
-                        time.sleep(self.reconnectTime)
-            except xmpp.protocol.XMLNotWellFormed:
-                logging.error('CONNECTION: reconnect (detected not valid XML)')
-                self.conn = None
-            except KeyboardInterrupt:
-                self.exit('EXIT: interrupted by keyboard')
-            except SystemExit:
-                self.exit('EXIT: interrupted by SIGTERM')
-            except ReloadData:
-                logging.info('RELOAD: by SIGHUP')
-                self.load()
-
-    def checkReconnect(self):
-        if self.conn:
-            now = datetime.datetime.now()
-            if (now - self.last).seconds > self.reconnectTime:
-                if self.iq:
-                    self.iq = None
-                    self.last = now
-                    self.conn.send(xmpp.protocol.Iq(to='jabber.ru', typ='get', queryNS=xmpp.NS_TIME))
-                else:
-                    logging.warning('CONNECTION: reconnect (iq reply timeout)')
-                    self.conn = None
-                    self.iq = True
+    def presence_handler(self, cl, prs):
+        # Allow owner's subscribe.
+        if (prs.getType() == 'subscribe' and
+            prs.getFrom().getStripped() == self.owner[0]):
+                prs_to = xmpp.Presence(to=prs.getFrom(), typ='subscribed')
+                self.send(prs_to)
 
 
-def sigTermCB(signum, frame):
-    raise SystemExit()
+def sigterm_handler(signum, frame):
+    raise SystemExit
 
 
-class ReloadData(Exception):
-    pass
-
-
-def sigHupCB(signum, frame):
-    raise ReloadData()
-
-
-cc = CC(config.user, config.rooms, config.owner)
-cc.load()
-cc.process()
+if __name__ == '__main__':
+    CC(config.user, config.rooms, config.owner).run()
