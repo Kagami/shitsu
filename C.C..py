@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-###############################################
-# C.C. - jabber bot
-# Copyright (C) 2008 anonymous
+##################################################
+# C.C. - python xmpp bot
+# Copyright (C) 2008-2012 Kagami <kagami@genshiken.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-###############################################
+##################################################
 
 import os
 import sys
