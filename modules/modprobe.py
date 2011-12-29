@@ -1,3 +1,4 @@
+import imp
 import logging
 import traceback
 import modules
@@ -14,11 +15,12 @@ class Module(modules.MessageModule):
         See also: load, rmmod, lsmod
         """
         try:
-            mod = __import__("modules." + module_name)
-            mod = getattr(mod, module_name)
-            if not issubclass(mod.Module, modules.MessageModule):
+            (file_, path_, desc_) = imp.find_module(module_name, ["modules"])
+            # TODO: Deep reload, http://www.indelible.org/ink/python-reloading/
+            mod = imp.load_module(module_name, file_, path_, desc_).Module
+            if not issubclass(mod, modules.MessageModule):
                 raise Exception("bad module class")
-            self._bot.modules[module_name] = mod.Module(module_name, self._bot)
+            self._bot.modules[module_name] = mod(module_name, self._bot)
         except Exception:
             error = "MODULE: can't load %s" % module_name
             logging.error("%s\n%s" % (error, traceback.format_exc()[:-1]))
