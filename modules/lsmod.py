@@ -10,7 +10,5 @@ class Module(modules.MessageModule):
         Show list of loaded modules.
         See also: load, modprobe, rmmod
         """
-        result = ["Avialable modules:"]
-        for module_name, module in self._bot.modules.items():
-            result.append("%s; acl: %s" % (module_name, module.acl))
-        return "\n".join(result)
+        result = []
+        return "Loaded modules: " + ", ".join(self._bot.modules)

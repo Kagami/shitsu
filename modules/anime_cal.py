@@ -7,6 +7,7 @@ import modules
 
 class Module(modules.MessageModule):
 
+    name = "a"
     args = (0,)
 
     def run(self):

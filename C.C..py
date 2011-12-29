@@ -34,7 +34,7 @@ import config
 
 class CC(object):
 
-    RECONNECT_TIME = 30
+    reconnect_time = 30
 
     def __init__(self, user, rooms, owner):
         self._done = False
@@ -62,7 +62,7 @@ class CC(object):
                     if self.connect():
                         logging.info("CONNECTION: bot connected")
                     else:
-                        time.sleep(self.RECONNECT_TIME)
+                        time.sleep(self.reconnect_time)
                 else:
                     self.cl.Process(1)
             except xmpp.protocol.XMLNotWellFormed:
@@ -138,7 +138,6 @@ class CC(object):
             return True
 
     def message_handler(self, cl, msg):
-        # TODO: StopProcessing(Exception)
         for module in self.modules.values():
             if isinstance(module, modules.MessageModule):
                 try:

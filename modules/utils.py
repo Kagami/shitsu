@@ -1,7 +1,5 @@
 import re
 import urllib2
-# TODO: Use python's standart htmlparser.
-from lxml import etree
 import modules
 
 
