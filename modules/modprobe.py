@@ -1,0 +1,29 @@
+import logging
+import traceback
+import modules
+
+
+class Module(modules.MessageModule):
+
+    acl = modules.ACL_OWNER
+    args = (1,)
+
+    def run(self, module_name):
+        """modprobe <module>
+        Load module.
+        See also: load, rmmod, lsmod
+        """
+        try:
+            mod = __import__("modules." + module_name)
+            mod = getattr(mod, module_name)
+            if not issubclass(mod.Module, modules.MessageModule):
+                raise Exception("bad module class")
+            self._bot.modules[module_name] = mod.Module(module_name, self._bot)
+        except Exception:
+            error = "MODULE: can't load %s" % module_name
+            logging.error("%s\n%s" % (error, traceback.format_exc()[:-1]))
+            return error
+        else:
+            info = "MODULE: %s loaded" % module_name
+            logging.info(info)
+            return info

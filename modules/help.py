@@ -1,12 +1,12 @@
+import modules
 import utils
 
 
-def main(bot, args):
-    """help
-    Help.
-    See also: man
-    """
-    if not args:
+class Module(modules.MessageModule):
+
+    args = (0,)
+
+    def run(self):
         return utils.trim("""
             Type %lsmod to show avialable modules.
             Type %man <module> to show module's help.

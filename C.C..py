@@ -20,22 +20,19 @@
 
 import os
 import sys
-os.chdir(sys.path[0])
-import imp
 import time
 import signal
 import logging
 import traceback
 import warnings
-warnings.filterwarnings('ignore', category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 try:
     import xmpp
 except ImportError:
-    path = os.path.join(os.path.dirname(__file__), 'lib')
+    path = os.path.join(os.path.dirname(__file__), "lib")
     sys.path.insert(0, path)
     import xmpp
-import utils
-sys.path.insert(0, 'modules')
+import modules.load
 import config
 
 
@@ -54,123 +51,46 @@ class CC(object):
 
         logging.basicConfig(
             level=logging.DEBUG,
-            format='[%(asctime)s] [%(levelname)s] %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S')
-        signal.signal(signal.SIGTERM, sigterm_handler)
+            format="[%(asctime)s] [%(levelname)s] %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S")
+        signal.signal(signal.SIGTERM, self.sigterm_handler)
 
-    def load(self, bot=None, args=None):
-        """load
-        Load all modules.
-        See also: modprobe, rmmod, lsmod
-        """
-        if args: return
-        self.userCommands  = {}
-        self.ownerCommands = {
-            'load': self.load,
-            'modprobe': self.modprobe,
-            'rmmod': self.rmmod,
-        }
-        for file in os.listdir('modules'):
-            if (file.endswith('.py') and
-                (file.startswith('user_') or file.startswith('owner_'))):
-                    pos = file.index('_') + 1
-                    self.modprobe(self, [file[pos:-3]])
-        return 'done'
-
-    def modprobe(self, bot, args):
-        """modprobe <module>
-        Load module.
-        See also: load, rmmod, lsmod
-        """
-        if len(args) != 1: return
-
-        name1 = 'user_%s' %args[0]
-        name2 = 'owner_%s' %args[0]
-
-        user = None
-        try:
-            file, pathname, description = imp.find_module(name1)
-            user = True
-            name = name1
-        except:
-            try:
-                file, pathname, description = imp.find_module(name2)
-                name = name2
-            except:
-                error = "MODULE: %s not found" % args[0]
-                logging.error(error)
-                return error
-
-        try:
-            method = imp.load_module(name, file, pathname, description).main
-        except:
-            error = "MODULE: can't load %s" % args[0]
-            logging.error(error)
-            return error
-        else:
-            if user:
-                self.userCommands[args[0]] = method
-            else:
-                self.ownerCommands[args[0]] = method
-
-        info = "MODULE: %s loaded" % args[0]
-        logging.info(info)
-        return info
-
-    def rmmod(self, bot, args):
-        """rmmod <module>
-        Remove module.
-        See also: load, modprobe, lsmod
-        """
-        if len(args) != 1: return
-
-        if args[0] == 'load' or args[0] == 'modprobe' or args[0] == 'rmmod':
-            return "MODULE: can't remove %s" % args[0]
-
-        if self.userCommands.has_key(args[0]):
-            del self.userCommands[args[0]]
-        elif self.ownerCommands.has_key(args[0]):
-            del self.ownerCommands[args[0]]
-        else:
-            return "MODULE: %s not loaded" % args[0]
-
-        info = "MODULE: %s removed" % args[0]
-        logging.info(info)
-        return info
+    def sigterm_handler(self, signum, frame):
+        raise SystemExit
 
     def run(self):
-        self.load()
+        modules.load.Module("load", self).run()
         while not self._done:
             try:
                 if self.cl is None:
                     if self.connect():
-                        logging.info('CONNECTION: bot connected')
+                        logging.info("CONNECTION: bot connected")
                     else:
                         time.sleep(self.RECONNECT_TIME)
                 else:
                     self.cl.Process(1)
             except xmpp.protocol.XMLNotWellFormed:
-                logging.error('CONNECTION: reconnect (detected not valid XML)')
+                logging.error("CONNECTION: reconnect (not valid XML)")
                 self.cl = None
             except (KeyboardInterrupt, SystemExit):
-                self.exit('EXIT: interrupted by SIGTERM')
+                self.exit("EXIT: interrupted by SIGTERM")
 
     def connect(self):
         self.cl = xmpp.Client(self.jid.getDomain(), debug = [])
         if not self.cl.connect():
-            logging.error('CONNECTION: unable to connect to server')
+            logging.error("CONNECTION: unable to connect to server")
             return
         if not self.cl.auth(self.jid.getNode(), self.password, self.res):
-            logging.error('CONNECTION: unable to authorize with server')
+            logging.error("CONNECTION: unable to authorize with server")
             return
         for room in self.rooms:
             self.send_join(*room)
-        self.cl.RegisterHandler('message', self.message_handler)
-        self.cl.RegisterHandler('presence', self.presence_handler)
+        self.cl.RegisterHandler("message", self.message_handler)
+        self.cl.RegisterHandler("presence", self.presence_handler)
         self.cl.sendPresence()
         return True
 
-    def exit(self, msg='exit'):
+    def exit(self, msg="exit"):
         if self.cl is None:
             return
         for room in self.rooms:
@@ -188,22 +108,22 @@ class CC(object):
         if not self._done:
             self.cl.send(stanza)
 
-    def send_message(self, to, type_, text, extra=None):
-        msg = xmpp.Message(to=to, typ=type_, body=text)
-        if extra:
-            xhtml = xmpp.Node(xmpp.NS_XHTML_IM + ' html')
-            body = xmpp.Node('http://www.w3.org/1999/xhtml body')
-            body.setPayload([extra])
-            xhtml.setPayload([body])
+    def send_message(self, to, type_, body, xhtml_body=None):
+        msg = xmpp.Message(to=to, typ=type_, body=body)
+        if xhtml_body:
+            xhtml = xmpp.Node(xmpp.NS_XHTML_IM + " html")
+            xbody = xmpp.Node("http://www.w3.org/1999/xhtml body")
+            xbody.setPayload([xhtml_body])
+            xhtml.setPayload([xbody])
             msg.addChild(node=xhtml)
         self.send(msg)
 
     def send_join(self, to, password=None):
-        x = xmpp.Node(xmpp.NS_MUC+' x')
+        x = xmpp.Node(xmpp.NS_MUC+" x")
         if password:
-            x.addChild('password', payload=password)
-        x.addChild('history', attrs={'maxstanzas': '0'})
-        room_jid = '%s/%s' % (to, self.res)
+            x.addChild("password", payload=password)
+        x.addChild("history", attrs={"maxstanzas": "0"})
+        room_jid = "%s/%s" % (to, self.res)
         self.send(xmpp.Presence(to=room_jid, payload=[x]))
 
     def join(self, room):
@@ -214,121 +134,30 @@ class CC(object):
 
     def leave(self, room):
         if room in self.rooms:
-            room_jid = '%s/%s' % (room[0], self.res)
+            room_jid = "%s/%s" % (room[0], self.res)
             prs = xmpp.Presence(
-                to=room_jid, typ='unavailable', status='offline')
+                to=room_jid, typ="unavailable", status="offline")
             self.send(prs)
             self.rooms.remove(room)
             return True
 
-    def is_from_room(self, jid):
-        for room in self.rooms:
-            if room[0] == jid:
-                return True
-
     def message_handler(self, cl, msg):
-        type_ = msg.getType()
-        from_ = msg.getFrom()
-        user = from_.getStripped()
-        prefix = from_.getResource()
-        text = utils.force_unicode(msg.getBody())
-        if ((not prefix) or (type_ == 'groupchat' and prefix == self.res) or
-            (not text)):
-            return
-
-        # Check command.
-        if text[0] == '%':
-            text = text[1:]
-        else:
-            if type_ == 'groupchat':
-                url_match = utils.url_re.search(text)
-                if url_match is not None:
-                    url = url_match.group()
-                    title = utils.getTitle(url)
-                    if title:
-                        self.send_message(user, type_, 'Title: ' + title)
-            return
-
-        # Parse command.
-        spl = text.split()
-        if spl:
-            cmd, args = spl[0], spl[1:]
-        else:
-            return
-
-        if self.is_from_room(user):
-            # Message from room.
-            if self.owner[1]:
-                owner = prefix == self.owner[1]
-            else:
-                owner = False
-        else:
-            # Message to bot's jid.
-            owner = user == self.owner[0]
-
-        if type_ == 'groupchat':
-            if '>' in args:
-                # Redirect output.
-                index  = args.index('>')
-                prefix = ''
-                redir  = ' '.join(args[index+1:])
-                if redir:
-                    prefix = redir + ', '
-                args   = args[:index]
-            else:
-                # Groupchat => prefix
-                prefix += ', '
-        else:
-            # Chat => no prefix
-            user, prefix = from_, ''
-
-        # Execute command.
-        error = None
-        if self.userCommands.has_key(cmd):
-            try:
-                result = self.userCommands[cmd](self, args)
-            except:
-                error = True
-        elif self.ownerCommands.has_key(cmd):
-            if owner:
+        # TODO: StopProcessing(Exception)
+        for module in self.modules.values():
+            if isinstance(module, modules.MessageModule):
                 try:
-                    result = self.ownerCommands[cmd](self, args)
-                except:
-                    error = True
-            else:
-                result = 'access denied'
-        else:
-            return
-
-        if error:
-            error = 'MODULE: exception in %s' %(cmd)
-            logging.error(error + '\n' + traceback.format_exc()[:-1])
-            msg, extra = error, ''
-        else:
-            if result:
-                if isinstance(result, tuple):
-                    msg, extra = result
-                else:
-                    msg, extra = result, ''
-            else:
-                msg, extra = 'invalid syntax', ''
-
-        if msg:
-            self.send_message(
-                user, type_,
-                prefix + utils.force_unicode(msg), extra)
+                    module.handle(msg)
+                except Exception:
+                    traceback.print_exc()
 
     def presence_handler(self, cl, prs):
         # Allow owner's subscribe.
-        if (prs.getType() == 'subscribe' and
-            prs.getFrom().getStripped() == self.owner[0]):
-                prs_to = xmpp.Presence(to=prs.getFrom(), typ='subscribed')
+        if (prs.getType() == "subscribe" and
+            prs.getFrom().getStripped() == self.owner):
+                prs_to = xmpp.Presence(to=prs.getFrom(), typ="subscribed")
                 self.send(prs_to)
 
 
-def sigterm_handler(signum, frame):
-    raise SystemExit
-
-
-if __name__ == '__main__':
+# TODO: Refactor config.
+if __name__ == "__main__":
     CC(config.user, config.rooms, config.owner).run()
