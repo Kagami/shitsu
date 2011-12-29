@@ -30,10 +30,10 @@ class Module(modules.MessageModule):
         # TODO: Graceful decoding.
         try:
             data = data.decode("utf-8")
-        except UnicodeEncodeError:
+        except Exception:
             try:
                 data = data.decode("cp1251")
-            except UnicodeEncodeError:
+            except Exception:
                 pass
         try:
             title = etree.HTML(data).find(".//title").text.strip()

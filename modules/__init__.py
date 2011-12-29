@@ -31,6 +31,7 @@ ACL_OWNER = ACL(7, "owner")
 
 class BaseModule(object):
 
+    # TODO: Aliases.
     name = None  # Module name (if not specified get it from file name).
 
     def __init__(self, module_name, bot):
