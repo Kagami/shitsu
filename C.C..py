@@ -20,18 +20,14 @@
 
 import os
 import sys
+os.chdir(sys.path[0])
 import time
 import signal
 import logging
 import traceback
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-try:
-    import xmpp
-except ImportError:
-    path = os.path.join(os.path.dirname(__file__), "lib")
-    sys.path.insert(0, path)
-    import xmpp
+import xmpp
 import modules.load
 import config
 
