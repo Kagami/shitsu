@@ -11,7 +11,7 @@ class Module(modules.MessageModule):
     args = (0,)
 
     def run(self):
-        """anime
+        """anime_cal
         Show anime list airing today (timezone UTC+9).
         Source: http://animecalendar.net/
         """

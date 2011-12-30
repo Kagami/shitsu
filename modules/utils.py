@@ -48,8 +48,12 @@ def create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
 
     host, port = address
     err = None
-    start = datetime.datetime.now()
-    delta = datetime.timedelta(seconds=timeout)
+    if timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
+        start = datetime.datetime.now()
+        delta = datetime.timedelta(seconds=timeout)
+        check_timeout = True
+    else:
+        check_timeout = False
     for res in socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM):
         af, socktype, proto, canonname, sa = res
         sock = None
@@ -66,7 +70,7 @@ def create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
             err = _
             if sock is not None:
                 sock.close()
-        if datetime.datetime.now() - start >= delta:
+        if check_timeout and datetime.datetime.now() - start >= delta:
             break
 
     if err is not None:
