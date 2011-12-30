@@ -11,20 +11,27 @@ class Module(modules.BaseModule):
         return "\n".join([line.strip() for line in docstring.splitlines()])
 
     url_timeout = 3
-    max_page_size = 3 * 1024 * 1024
+    default_max_page_size = 1 * 1024 * 1024
     request_headers = {
         "User-Agent": ("Mozilla/5.0 (Windows NT 5.1; rv:8.0) "
                        "Gecko/20100101 Firefox/8.0")
     }
 
-    def get_url(self, url):
+    def get_url(self, url, max_page_size=default_max_page_size,
+                return_headers=False):
         request = urllib2.Request(
-            url.encode("utf-8"), None, self.request_headers)
+            url.encode("utf-8"), None,
+            self.request_headers)
         try:
             f = urllib2.urlopen(request, timeout=self.url_timeout)
-            return f.read(self.max_page_size)
+            data = f.read(max_page_size)
         except Exception:
             return ""
+        else:
+            if return_headers:
+                return data, f.info()
+            else:
+                return data
 
 
 # Patched version socket.create_connection from python's 2.7

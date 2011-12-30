@@ -91,7 +91,7 @@ class MessageModule(BaseModule):
         args = None
         if self.rec is not None:
             match = self.rec.search(body)
-            if match is not None:
+            if match:
                 args = match.groups()
         else:
             if self.use_prefix:
