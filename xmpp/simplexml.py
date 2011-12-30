@@ -128,7 +128,7 @@ class Node(object):
                 if isinstance(a, Node):
                     s = s + a.__str__(fancy and fancy+1)
                 elif a:
-                    s = s + a.__str__()
+                    s = s + unicode(a)
                 cnt=cnt+1
         if not fancy and (len(self.data)-1) >= cnt: s = s + XMLescape(self.data[cnt])
         elif (len(self.data)-1) >= cnt: s = s + XMLescape(self.data[cnt].strip())
