@@ -91,6 +91,7 @@ class CC(object):
             return
         for room in self.rooms:
             self.leave(room)
+        self.cl.sendPresence(typ="unavailable")
         try:
             self.cl.disconnect()
         except AttributeError:
@@ -149,8 +150,8 @@ class CC(object):
         # Allow owner's subscribe.
         if (prs.getType() == "subscribe" and
             prs.getFrom().getStripped() == self.owner):
-                prs_to = xmpp.Presence(to=prs.getFrom(), typ="subscribed")
-                self.send(prs_to)
+                self.send(xmpp.Presence(to=prs.getFrom(), typ="subscribed"))
+                self.send(xmpp.Presence(to=prs.getFrom(), typ="subscribe"))
 
 
 # TODO: Refactor config.
