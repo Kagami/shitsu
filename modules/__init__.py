@@ -46,10 +46,11 @@ class MessageModule(BaseModule):
     """Base class for message modules."""
 
     prefix = "%"  # TODO: Set it via config.
-    use_prefix = True  # Should command be prefixed.
+    use_prefix = True  # Is command should be prefixed.
     acl = ACL_ANY  # Minimum access level required to use command.
-    re = None  # Command regexp (if not specified match by name).
-    types = ("chat", "groupchat")  # Process messages only this specified types.
+    regexp = None  # Command regexp (if not specified match by name).
+    types = ("chat", "groupchat")  # Process messages only with specified types.
+    _all_types = ("chat", "groupchat")  # Don't touch this.
     raw_query = False  # If true module will get raw query string.
     args = ()  # List of correct arguments number. (1, 3) means 1 or 3.
                # Empty list means any number.
@@ -57,8 +58,8 @@ class MessageModule(BaseModule):
 
     def __init__(self, module_name, bot):
         super(MessageModule, self).__init__(module_name, bot)
-        if self.re is not None:
-            self.rec = re.compile(self.re)
+        if self.regexp is not None:
+            self.rec = re.compile(self.regexp)
         else:
             self.rec = None
 
@@ -79,7 +80,7 @@ class MessageModule(BaseModule):
         from_ = msg.getFrom()
         resource = from_.getResource()
         body = msg.getBody()
-        if type_ not in self.types:
+        if type_ not in self._all_types or type_ not in self.types:
             return
         # TODO: Subject catch (empty resource).
         if ((not resource) or
@@ -143,20 +144,20 @@ class MessageModule(BaseModule):
         from_ = msg.getFrom()
         from_jid = from_.getStripped()
         resource = from_.getResource()
-        prefix = ""
         if type_ == "chat":
             to = from_
-        else:
+        elif type_ == "groupchat":
             to = from_jid
             if self.highlight:
-                prefix = resource + ", "
-        body = prefix + body
+                body = resource + ", " + body
+        else:
+            raise NotImplemented
         self._bot.send_message(to, type_, body, xhtml_body)
 
     def run(self, *args):
         """Main module's function.
         Get:
-        match.groups() if self.re is not None
+        match.groups() if module's regexp specified
         splitted list of arguments otherwise
         Return:
         string (str on unicode) on simple result
