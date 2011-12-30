@@ -29,11 +29,12 @@ class Module(modules.MessageModule):
             return "can't get data"
 
         tree = etree.HTML(data)
-        info = "Anime for %02d.%02d.%d " % (now.day, now.month, now.year)
         if day:
+            info = "Anime for %02d.%02d.%d" % (now.day, now.month, now.year)
             time_str = ""
         else:
-            time_str = " ; now: %02d:%02d (UTC+9)" % (now.hour, now.minute)
+            info = "Anime for today"
+            time_str = " now: %02d:%02d (UTC+9)" % (now.hour, now.minute)
         anime_list = ["%s <%s>%s" % (info, url, time_str)]
         anime_list_xhtml = [
             "%s &lt;<a href='%s'>%s</a>&gt;%s" % (info, url, url, time_str)
