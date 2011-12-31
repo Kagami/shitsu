@@ -13,10 +13,11 @@ class Module(modules.MessageModule):
 
     max_title_length = 150
     blacklisted_domains_rec = re.compile(
-        "https?://(www\.)?(localhost|127\.0\.0\.1)")
-    headers_charset_rec = re.compile("charset=([^;]{1,10})", re.I)
-    meta_charset_rec = re.compile("<meta\s+[^>]*charset=([^'\";]{1,10})", re.I)
-    title_rec = re.compile("<title\s*>([^<]{1,300})", re.I)
+        r"https?://(www\.)?(localhost|127\.0\.0\.1)")
+    headers_charset_rec = re.compile(r"charset=([^;]{1,20})", re.I)
+    meta_charset_rec = re.compile(
+        r"<meta\s+[^>]*charset=([^'\";\s/>]{1,20})", re.I)
+    title_rec = re.compile(r"<title\s*>([^<]{1,300})", re.I)
 
     def run(self, url):
         """Print url's title."""
@@ -92,6 +93,8 @@ if __name__ == "__main__":
             self.modules = {"utils": utils}
     module = Module(None, DummyBot())
 
+    print "localhost:", module.run("http://localhost/")
+    print "windows-1251:", module.run("http://www.yermak.com.ua/txt/pol/art_kursk.html")
     print "ya.ru:", module.run("http://ya.ru")
     print "youtube:", module.run("http://www.youtube.com/watch?v=ZjFIt78fCxI")
     print "rutube:", module.run("http://rutube.ru")
