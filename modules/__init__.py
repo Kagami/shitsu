@@ -25,7 +25,7 @@ class ACL(object):
 
 
 # Access level constants.
-ACL_ANY = ACL(0, "any")
+ACL_NONE = ACL(0, "none")
 ACL_OWNER = ACL(7, "owner")
 
 
@@ -47,14 +47,17 @@ class MessageModule(BaseModule):
 
     prefix = "%"  # TODO: Set it via config.
     use_prefix = True  # Is command should be prefixed.
-    acl = ACL_ANY  # Minimum access level required to use command.
+    acl = ACL_NONE  # Minimum access level required to use command.
     regexp = None  # Command regexp (if not specified match by name).
-    types = ("chat", "groupchat")  # Process messages only with specified types.
+    types = ("chat", "groupchat")  # Process messages only with
+                                   # specified types.
     _all_types = ("chat", "groupchat")  # Don't touch this.
     raw_query = False  # If true module will get raw query string.
     args = ()  # List of correct arguments number. (1, 3) means 1 or 3.
                # Empty list means any number.
     highlight = True  # Highlight users in groupchats with command's result.
+    additional_args = False  # Send to module some additional args such as
+                             # original stanza and user acl.
 
     def __init__(self, module_name, bot):
         super(MessageModule, self).__init__(module_name, bot)
@@ -67,10 +70,10 @@ class MessageModule(BaseModule):
         if msg.getFrom().getStripped() == self._bot.owner:
             return ACL_OWNER
         else:
-            return ACL_ANY
+            return ACL_NONE
 
-    def is_allowed(self, msg):
-        if self.get_user_acl(msg) < self.acl:
+    def is_allowed(self, user_acl):
+        if user_acl < self.acl:
             return False
         else:
             return True
@@ -88,11 +91,12 @@ class MessageModule(BaseModule):
                 return
         if body is None:
             body = ""
-        args = None
         if self.rec is not None:
             match = self.rec.search(body)
             if match:
                 args = match.groups()
+            else:
+                return
         else:
             if self.use_prefix:
                 if not body.startswith(self.prefix):
@@ -111,19 +115,24 @@ class MessageModule(BaseModule):
                 if self.args and len(args) not in self.args:
                     self.send_message(msg, "invalid syntax")
                     return
-        if args is None:
-            return
-        if self.is_allowed(msg):
-            self.run_and_send_result(msg, *args)
+        user_acl = self.get_user_acl(msg)
+        if self.is_allowed(user_acl):
+            if self.additional_args:
+                kwargs = {"add": {
+                    "msg": msg, "user_acl": user_acl},
+                }
+            else:
+                kwargs = {}
+            self.run_and_send_result(msg, *args, **kwargs)
         else:
             self.send_message(msg, "access denied")
 
-    def run_and_send_result(self, msg, *args):
+    def run_and_send_result(self, msg, *args, **kwargs):
         body = None
         xhtml_body = None
         try:
             # TODO: Threading.
-            result = self.run(*args)
+            result = self.run(*args, **kwargs)
         except Exception:
             error = "MODULE: exception in " + self.name
             logging.error("%s\n%s" % (

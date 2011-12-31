@@ -25,6 +25,7 @@ import time
 import signal
 import logging
 import traceback
+import xml.parsers.expat
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import xmpp
@@ -65,7 +66,7 @@ class CC(object):
                         time.sleep(self.reconnect_time)
                 else:
                     self.cl.Process(1)
-            except xmpp.protocol.XMLNotWellFormed:
+            except xmpp.XMLNotWellFormed:
                 logging.error("CONNECTION: reconnect (not valid XML)")
                 self.cl = None
             except (KeyboardInterrupt, SystemExit):
@@ -94,7 +95,7 @@ class CC(object):
         self.cl.sendPresence(typ="unavailable")
         try:
             self.cl.disconnect()
-        except AttributeError:
+        except (AttributeError, xml.parsers.expat.ExpatError):
             # TODO: Why does this happen on disconnect?
             # %%C.O.: xmpppy is crap%%
             pass

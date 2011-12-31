@@ -9,7 +9,7 @@ class Module(modules.MessageModule):
     args = (0,)
 
     def run(self):
-        """load
+        """
         Load all modules.
         See also: modprobe, rmmod, lsmod
         """

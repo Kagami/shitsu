@@ -10,7 +10,7 @@ class Module(modules.MessageModule):
     args = (1,)
 
     def run(self, module_name):
-        """modprobe <module>
+        """<module>
         Load module.
         See also: load, rmmod, lsmod
         """

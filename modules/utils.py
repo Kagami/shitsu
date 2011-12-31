@@ -83,6 +83,6 @@ def create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
     if err is not None:
         raise err
     else:
-        raise error("getaddrinfo returns an empty list")
+        raise socket.error("getaddrinfo returns an empty list")
 
 socket.create_connection = create_connection

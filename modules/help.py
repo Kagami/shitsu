@@ -6,8 +6,15 @@ class Module(modules.MessageModule):
     args = (0,)
 
     def run(self):
+        commands = []
+        for module in self._bot.modules.values():
+            if isinstance(module, modules.MessageModule):
+                commands.append(module.name)
+        commands.sort()
+        commands = ", ".join(commands)
         return self.get_utils().trim("""
-            Type %lsmod to show avialable modules.
-            Type %man <module> to show module's help.
+            Basic bot usage: %%<command> <args>
+            Available commands: %s
+            Type %%man -v <command> to show command's manual page.
             Sources and bug tracker: https://github.com/Kagami/C.C.
-            """)
+            """ % commands)

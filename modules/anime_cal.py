@@ -11,7 +11,7 @@ class Module(modules.MessageModule):
     args = (0, 1, 2, 3)
 
     def run(self, day=None, month=None, year=None):
-        """anime_cal [day [month [yeah]]]
+        """[day [month [yeah]]]
         Show anime list airing today (timezone UTC+9) or at specified date.
         Source: http://animecalendar.net/
         """

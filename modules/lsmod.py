@@ -3,10 +3,11 @@ import modules
 
 class Module(modules.MessageModule):
 
+    acl = modules.ACL_OWNER
     args = (0,)
 
     def run(self):
-        """lsmod
+        """
         Show list of loaded modules.
         See also: load, modprobe, rmmod
         """
