@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import re
 import codecs
 import htmlentitydefs
@@ -57,7 +55,7 @@ class Module(modules.MessageModule):
         title = re.sub(r" {2,}", " ", title)
         title = self.unescape(title)
         if len(title) > self.max_title_length:
-            title = title[:self.max_title_length] + u"…"
+            title = title[:self.max_title_length] + u"\u2026"
         return "Title: " + title
 
     def is_encoding_exists(self, encoding):

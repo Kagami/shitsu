@@ -1,4 +1,5 @@
 import datetime
+import random
 import socket
 import urllib2
 
@@ -27,6 +28,10 @@ def get_url(url, max_page_size=default_max_page_size, return_headers=False):
             return data, f.info()
         else:
             return data
+
+
+def get_id():
+    return "".join(map(lambda _: str(random.randint(0, 9)), xrange(10)))
 
 
 # Patched version socket.create_connection from python's 2.7

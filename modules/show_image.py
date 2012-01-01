@@ -13,4 +13,4 @@ class Module(modules.MessageModule):
         http://xmpp.org/extensions/xep-0071.html#profile-image
         """
         img = xmpp.Node("img", attrs={"alt": "img", "src": img_url})
-        return "<enable xhtml-im to see image>", img
+        return "<enable xhtml-im to see image>", unicode(img)

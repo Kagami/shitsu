@@ -158,6 +158,11 @@ class MessageModule(BaseModule):
                 body = resource + ", " + body
         else:
             raise NotImplemented
+        if len(body) > 2000:
+            body = body[:2000] + u"\u2026"
+        if xhtml_body and len(xhtml_body) > 2000:
+            # We can't just cut xml.
+            xhtml_body = None
         self._bot.send_message(to, type_, body, xhtml_body)
 
     def run(self, *args):
