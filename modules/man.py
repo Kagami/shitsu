@@ -36,5 +36,5 @@ class Module(modules.MessageModule):
                                     man, module.acl, user_acl))
                     return man
                 else:
-                    return nod_found
+                    return not_found
         return not_found

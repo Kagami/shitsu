@@ -36,6 +36,7 @@ import config
 class CC(object):
 
     reconnect_time = 30
+    reload_filename_path = os.path.join("tmp", "__reload__")
 
     def __init__(self, user, rooms, owner):
         self._done = False
@@ -58,6 +59,10 @@ class CC(object):
     def run(self):
         modules.load.Module("load", self).run()
         while not self._done:
+            if os.path.isfile(self.reload_filename_path):
+                os.remove(self.reload_filename_path)
+                logging.info("RELOAD")
+                modules.load.Module("load", self).run()
             try:
                 if self.cl is None:
                     if self.connect():
