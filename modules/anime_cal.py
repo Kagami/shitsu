@@ -1,7 +1,6 @@
 import re
 import datetime
-# TODO: Use BeautifulSoup.
-from lxml import etree
+from BeautifulSoup import BeautifulSoup
 import modules
 import utils
 reload(utils)
@@ -30,7 +29,6 @@ class Module(modules.MessageModule):
         if not data:
             return "can't get data"
 
-        tree = etree.HTML(data)
         if day:
             info = "Anime for %02d.%02d.%d" % (now.day, now.month, now.year)
             time_str = ""
@@ -41,9 +39,10 @@ class Module(modules.MessageModule):
         anime_list_xhtml = [
             "%s &lt;<a href='%s'>%s</a>&gt;%s" % (info, url, url, time_str)
         ]
-        for div in tree.findall(".//div[@class='ep_box']"):
-            anime = div.find("h3").find("a").text.strip()
-            ep = div.find("small").text.replace("\t", "").replace("\n", "")
+        soup = BeautifulSoup(data)
+        for div in soup.findAll("div", {"class": "ep_box"}):
+            anime = div.h3.a.string.strip()
+            ep = div.small.string.replace("\t", "").replace("\n", "")
             anime_list.append("%s (%s)" % (anime, ep))
 
             line = "%s <span style='font-style: italic;'>(%s)</span>" % (
