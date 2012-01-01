@@ -34,8 +34,8 @@ def get_url(url, max_page_size=default_max_page_size, return_headers=False):
 # Respect timeout value, do check on each cycle loop.
 # Standart version can wait till `count_of_dns_records*timeout'.
 
-def create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-                      source_address=None):
+def _create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
+                       source_address=None):
     """Connect to *address* and return the socket object.
 
     Convenience function.  Connect to *address* (a 2-tuple ``(host,
@@ -80,4 +80,4 @@ def create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
     else:
         raise socket.error("getaddrinfo returns an empty list")
 
-socket.create_connection = create_connection
+socket.create_connection = _create_connection
