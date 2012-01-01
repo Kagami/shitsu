@@ -1,4 +1,6 @@
 import modules
+import utils
+reload(utils)
 
 
 class Module(modules.MessageModule):
@@ -12,7 +14,7 @@ class Module(modules.MessageModule):
                 commands.append(module.name)
         commands.sort()
         commands = ", ".join(commands)
-        return self.get_utils().trim("""
+        return utils.trim("""
             Basic bot usage: %%<command> <args>
             Available commands: %s
             Type %%man -v <command> to show command's manual page.

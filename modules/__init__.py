@@ -38,9 +38,6 @@ class BaseModule(object):
         self.name = self.name if self.name else module_name
         self._bot = bot
 
-    def get_utils(self):
-        return self._bot.modules["utils"]
-
 
 class MessageModule(BaseModule):
     """Base class for message modules."""

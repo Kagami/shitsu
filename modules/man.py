@@ -1,4 +1,6 @@
 import modules
+import utils
+reload(utils)
 
 
 class Module(modules.MessageModule):
@@ -28,7 +30,7 @@ class Module(modules.MessageModule):
             if module.name == command:
                 man = module.run.__doc__
                 if isinstance(module, modules.MessageModule) and man:
-                    man = self.get_utils().trim(command + " " + man)
+                    man = utils.trim(command + " " + man)
                     if verbose:
                         user_acl = kwargs["add"]["user_acl"]
                         man = ("%s\n\nMinimum access level required: %s\n"

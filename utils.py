@@ -1,37 +1,32 @@
 import datetime
 import socket
 import urllib2
-import modules
 
 
-class Module(modules.BaseModule):
+def trim(docstring):
+    docstring = docstring.strip()
+    return "\n".join([line.strip() for line in docstring.splitlines()])
 
-    def trim(self, docstring):
-        docstring = docstring.strip()
-        return "\n".join([line.strip() for line in docstring.splitlines()])
 
-    url_timeout = 3
-    default_max_page_size = 1 * 1024 * 1024
-    request_headers = {
-        "User-Agent": ("Mozilla/5.0 (Windows NT 6.1; rv:9.0) "
-                       "Gecko/20100101 Firefox/9.0")
-    }
+default_url_timeout = 3
+default_max_page_size = 1 * 1024 * 1024
+request_headers = {
+    "User-Agent": ("Mozilla/5.0 (Windows NT 6.1; rv:9.0) "
+                   "Gecko/20100101 Firefox/9.0")
+}
 
-    def get_url(self, url, max_page_size=default_max_page_size,
-                return_headers=False):
-        request = urllib2.Request(
-            url.encode("utf-8"), None,
-            self.request_headers)
-        try:
-            f = urllib2.urlopen(request, timeout=self.url_timeout)
-            data = f.read(max_page_size)
-        except Exception:
-            return ""
+def get_url(url, max_page_size=default_max_page_size, return_headers=False):
+    request = urllib2.Request(url.encode("utf-8"), None, request_headers)
+    try:
+        f = urllib2.urlopen(request, timeout=default_url_timeout)
+        data = f.read(max_page_size)
+    except Exception:
+        return ""
+    else:
+        if return_headers:
+            return data, f.info()
         else:
-            if return_headers:
-                return data, f.info()
-            else:
-                return data
+            return data
 
 
 # Patched version socket.create_connection from python's 2.7

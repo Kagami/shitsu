@@ -4,6 +4,8 @@ import re
 import codecs
 import htmlentitydefs
 import modules
+import utils
+reload(utils)
 
 
 class Module(modules.MessageModule):
@@ -24,8 +26,7 @@ class Module(modules.MessageModule):
         """Print url's title."""
         if self.blacklisted_domains_rec.match(url):
             return ""
-        result = self.get_utils().get_url(url, max_page_size=5000,
-                                          return_headers=True)
+        result = utils.get_url(url, max_page_size=5000, return_headers=True)
         if not result:
             return ""
         (data, headers) = result
@@ -98,12 +99,7 @@ class Module(modules.MessageModule):
 # Test module.
 if __name__ == "__main__":
     import sys
-    from modules.utils import Module as UtilsModule
-    utils = UtilsModule(None, None)
-    class DummyBot:
-        def __init__(self):
-            self.modules = {"utils": utils}
-    module = Module(None, DummyBot())
+    module = Module(None, None)
 
     if len(sys.argv) > 1:
         for url in sys.argv[1:]:
@@ -113,6 +109,7 @@ if __name__ == "__main__":
     print "windows-1251:", module.run("http://www.yermak.com.ua/txt/pol/art_kursk.html")
     print "windpws-1251:", module.run("http://atv.odessa.ua/?t=11803")
     print "ya.ru:", module.run("http://ya.ru")
+    print "https://ya.ru:", module.run("https://ya.ru")
     print "youtube:", module.run("http://www.youtube.com/watch?v=ZjFIt78fCxI")
     print "gpl:", module.run("http://www.gnu.org/philosophy/right-to-read.ru.html")
     print "iichan:", module.run("http://iichan.ru/b/")

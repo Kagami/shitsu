@@ -1,8 +1,10 @@
 import re
 import datetime
-# TODO: Use python's standart htmlparser.
+# TODO: Use BeautifulSoup.
 from lxml import etree
 import modules
+import utils
+reload(utils)
 
 
 class Module(modules.MessageModule):
@@ -24,7 +26,7 @@ class Module(modules.MessageModule):
             return
         url = "http://animecalendar.net/%d/%d/%d" % (
             now.year, now.month, now.day)
-        data = self.get_utils().get_url(url)
+        data = utils.get_url(url)
         if not data:
             return "can't get data"
 
