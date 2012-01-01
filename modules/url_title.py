@@ -1,13 +1,14 @@
 # coding: utf-8
 
 import re
+import codecs
 import htmlentitydefs
 import modules
 
 
 class Module(modules.MessageModule):
 
-    regexp = r"(https?://[^ >]+)"
+    regexp = r"(https?://[^'\"\s>]+)"
     types = ("groupchat",)
     highlight = False
 
@@ -16,7 +17,7 @@ class Module(modules.MessageModule):
         r"https?://(www\.)?(localhost|127\.0\.0\.1)")
     headers_charset_rec = re.compile(r"charset=([^;]{1,20})", re.I)
     meta_charset_rec = re.compile(
-        r"<meta\s+[^>]*charset=([^'\";\s/>]{1,20})", re.I)
+        r"<meta\s+[^>]*charset=['\"]?([^'\";\s/>]{1,20})", re.I)
     title_rec = re.compile(r"<title\s*>([^<]{1,300})", re.I)
 
     def run(self, url):
@@ -28,16 +29,18 @@ class Module(modules.MessageModule):
         if not result:
             return ""
         (data, headers) = result
-        # Get page charset.
+        # Get page charset. At first try headers.
         ctype = headers.getheader("Content-Type", "")
         match = self.headers_charset_rec.search(ctype)
-        if match:
+        if match and self.is_encoding_exists(match.group(1)):
             charset = match.group(1)
         else:
+            # Then check meta tag.
             match = self.meta_charset_rec.search(data)
-            if match:
+            if match and self.is_encoding_exists(match.group(1)):
                 charset = match.group(1)
             else:
+                # Fallback to default.
                 charset = "utf-8"
         # Decode data.
         try:
@@ -55,6 +58,14 @@ class Module(modules.MessageModule):
         if len(title) > self.max_title_length:
             title = title[:self.max_title_length] + u"…"
         return "Title: " + title
+
+    def is_encoding_exists(self, encoding):
+        try:
+            codecs.lookup(encoding)
+        except LookupError:
+            return False
+        else:
+            return True
 
     def unescape(self, text):
         """Removes HTML or XML character references and
@@ -86,6 +97,7 @@ class Module(modules.MessageModule):
 
 # Test module.
 if __name__ == "__main__":
+    import sys
     from modules.utils import Module as UtilsModule
     utils = UtilsModule(None, None)
     class DummyBot:
@@ -93,11 +105,15 @@ if __name__ == "__main__":
             self.modules = {"utils": utils}
     module = Module(None, DummyBot())
 
+    if len(sys.argv) > 1:
+        for url in sys.argv[1:]:
+            print url + ": " + module.run(url)
+        sys.exit()
     print "localhost:", module.run("http://localhost/")
     print "windows-1251:", module.run("http://www.yermak.com.ua/txt/pol/art_kursk.html")
+    print "windpws-1251:", module.run("http://atv.odessa.ua/?t=11803")
     print "ya.ru:", module.run("http://ya.ru")
     print "youtube:", module.run("http://www.youtube.com/watch?v=ZjFIt78fCxI")
-    print "rutube:", module.run("http://rutube.ru")
     print "gpl:", module.run("http://www.gnu.org/philosophy/right-to-read.ru.html")
     print "iichan:", module.run("http://iichan.ru/b/")
     print "gelbooru:", module.run("http://gelbooru.com/index.php?page=post&s=view&id=975863")
