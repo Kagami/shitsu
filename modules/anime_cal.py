@@ -6,9 +6,8 @@ import utils
 reload(utils)
 
 
-class Module(modules.MessageModule):
+class A(modules.MessageModule):
 
-    name = "a"
     args = (0, 1, 2, 3)
 
     def run(self, day=None, month=None, year=None):
@@ -62,7 +61,7 @@ class Module(modules.MessageModule):
 
 
 if __name__ == "__main__":
-    (text, xhtml) = Module(None, None).run()
+    (text, xhtml) = A(None).run()
     print text
     print "==="
     print xhtml

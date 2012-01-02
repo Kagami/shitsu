@@ -3,7 +3,7 @@ import utils
 reload(utils)
 
 
-class Module(modules.MessageModule):
+class Man(modules.MessageModule):
 
     args = (0, 1, 2)
     additional_args = True

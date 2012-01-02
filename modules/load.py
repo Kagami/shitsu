@@ -4,7 +4,7 @@ import modules
 import modules.modprobe
 
 
-class Module(modules.MessageModule):
+class Load(modules.MessageModule):
 
     acl = modules.ACL_OWNER
     args = (0,)
@@ -16,7 +16,7 @@ class Module(modules.MessageModule):
         """
         self._bot.cfg = config.Config().get_sect("main")
         self._bot.modules = {}
-        modprobe = modules.modprobe.Module("modprobe", self._bot)
+        modprobe = modules.modprobe.Modprobe(self._bot)
         for module_name in os.listdir("modules"):
             if (module_name.startswith("_") or
                 module_name.startswith(".") or

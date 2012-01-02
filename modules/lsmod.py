@@ -1,7 +1,7 @@
 import modules
 
 
-class Module(modules.MessageModule):
+class Lsmod(modules.MessageModule):
 
     acl = modules.ACL_OWNER
     args = (0,)

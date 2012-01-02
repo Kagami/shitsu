@@ -31,14 +31,11 @@ ACL_OWNER = ACL(7, "owner")
 
 class BaseModule(object):
 
-    # TODO: Aliases.
-    name = None  # Module name (if not specified get it from file name).
-
-    def __init__(self, module_name, bot):
-        self.name = self.name if self.name else module_name
+    def __init__(self, bot):
+        self.name = self.__class__.__name__.lower()
         self._bot = bot
-        if bot.cfg:
-            self.cfg = bot.cfg._config.get_sect(module_name)
+        if bot and bot.cfg:
+            self.cfg = bot.cfg._config.get_sect(self.name)
 
 
 class MessageModule(BaseModule):
@@ -57,8 +54,8 @@ class MessageModule(BaseModule):
     additional_args = False  # Send to module some additional args such as
                              # original stanza and user acl.
 
-    def __init__(self, module_name, bot):
-        super(MessageModule, self).__init__(module_name, bot)
+    def __init__(self, bot):
+        super(MessageModule, self).__init__(bot)
         if self.regexp is not None:
             self.rec = re.compile(self.regexp)
         else:

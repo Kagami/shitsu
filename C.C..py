@@ -45,7 +45,7 @@ class CC(object):
         self._done = False
         self.cl = None
         self.cfg = None
-        modules.load.Module("load", self).run()
+        modules.load.Load(self).run()
         self.res = "nyak"
         self.rooms = []
 
@@ -57,7 +57,7 @@ class CC(object):
             if os.path.isfile(self.reload_filename_path):
                 os.remove(self.reload_filename_path)
                 logging.info("RELOAD")
-                modules.load.Module("load", self).run()
+                modules.load.Load(self).run()
             try:
                 if self.cl is None:
                     if self.connect():

@@ -4,7 +4,7 @@ import utils
 reload(utils)
 
 
-class Module(modules.MessageModule):
+class Disco(modules.MessageModule):
 
     args = (1,)
     additional_args = True

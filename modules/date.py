@@ -2,7 +2,7 @@ import modules
 import datetime
 
 
-class Module(modules.MessageModule):
+class Date(modules.MessageModule):
 
     args = (0,)
 

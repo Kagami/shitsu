@@ -2,9 +2,8 @@ import xmpp
 import modules
 
 
-class Module(modules.MessageModule):
+class S(modules.MessageModule):
 
-    name = "s"
     args = (1,)
 
     def run(self, img_url):

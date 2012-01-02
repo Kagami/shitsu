@@ -6,9 +6,8 @@ import utils
 reload(utils)
 
 
-class Module(modules.MessageModule):
+class G(modules.MessageModule):
 
-    name = "g"
     raw_query = True
 
     # TODO: Use new API!

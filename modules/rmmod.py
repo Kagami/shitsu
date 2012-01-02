@@ -2,7 +2,7 @@ import logging
 import modules
 
 
-class Module(modules.MessageModule):
+class Rmmod(modules.MessageModule):
 
     acl = modules.ACL_OWNER
     args = (1,)
