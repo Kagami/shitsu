@@ -18,7 +18,7 @@ class Config(object):
         if section in self._sections and option in self._items[section]:
             return self._items[section][option]
         else:
-            return None
+            return ""
 
 
 class ConfigSection(object):

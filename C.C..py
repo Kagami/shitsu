@@ -46,8 +46,6 @@ class CC(object):
         self.cl = None
         self.cfg = None
         modules.load.Load(self).run()
-        self.res = "nyak"
-        self.rooms = []
 
     def sigterm_handler(self, signum, frame):
         raise SystemExit
@@ -84,18 +82,26 @@ class CC(object):
             logging.error("CONNECTION: unable to authorize with server")
             self.cl = None
             return
-        for room in self.rooms:
-            self.send_join(*room)
+        for module in self.modules.values():
+            if isinstance(module, modules.ConnectModule):
+                try:
+                    module.run()
+                except Exception:
+                    traceback.print_exc()
         self.cl.RegisterHandler("message", self.message_handler)
         self.cl.RegisterHandler("presence", self.presence_handler)
         self.cl.sendPresence()
         return True
 
-    def exit(self, msg="exit"):
+    def exit(self, msg="EXIT: by request"):
         if self.cl is None:
             return
-        for room in self.rooms:
-            self.leave(room)
+        for module in self.modules.values():
+            if isinstance(module, modules.DisconnectModule):
+                try:
+                    module.run()
+                except Exception:
+                    traceback.print_exc()
         self.cl.sendPresence(typ="unavailable")
         self.cl.disconnect()
         logging.info(msg)
@@ -104,6 +110,16 @@ class CC(object):
     def send(self, stanza):
         if not self._done:
             self.cl.send(stanza)
+
+    def send_join(self, conf_jid, password=None):
+        x = xmpp.Node(xmpp.NS_MUC + " x")
+        if password:
+            x.addChild("password", payload=password)
+        x.addChild("history", attrs={"maxstanzas": "0"})
+        self.send(xmpp.Presence(to=conf_jid, payload=[x]))
+
+    def send_leave(self, conf_jid):
+        self.send(xmpp.Presence(to=conf_jid, typ="unavailable"))
 
     def send_message(self, to, type_, body, xhtml_body=None):
         msg = xmpp.Message(to=to, typ=type_, body=body)
@@ -114,29 +130,6 @@ class CC(object):
             xhtml.setPayload([xbody])
             msg.addChild(node=xhtml)
         self.send(msg)
-
-    def send_join(self, to, password=None):
-        x = xmpp.Node(xmpp.NS_MUC + " x")
-        if password:
-            x.addChild("password", payload=password)
-        x.addChild("history", attrs={"maxstanzas": "0"})
-        room_jid = "%s/%s" % (to, self.res)
-        self.send(xmpp.Presence(to=room_jid, payload=[x]))
-
-    def join(self, room):
-        if not room in self.rooms:
-            self.send_join(*room)
-            self.rooms.append(room)
-            return True
-
-    def leave(self, room):
-        if room in self.rooms:
-            room_jid = "%s/%s" % (room[0], self.res)
-            prs = xmpp.Presence(
-                to=room_jid, typ="unavailable", status="offline")
-            self.send(prs)
-            self.rooms.remove(room)
-            return True
 
     def message_handler(self, cl, msg):
         for module in self.modules.values():

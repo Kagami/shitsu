@@ -1,5 +1,6 @@
 import os
 import config
+reload(config)
 import modules
 import modules.modprobe
 

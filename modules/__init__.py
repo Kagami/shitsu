@@ -31,11 +31,12 @@ ACL_OWNER = ACL(7, "owner")
 
 class BaseModule(object):
 
-    def __init__(self, bot):
+    def __init__(self, bot, config_section=None):
         self.name = self.__class__.__name__.lower()
         self._bot = bot
         if bot and bot.cfg:
-            self.cfg = bot.cfg._config.get_sect(self.name)
+            if not config_section: config_section = self.name
+            self.cfg = bot.cfg._config.get_sect(config_section)
 
 
 class MessageModule(BaseModule):
@@ -54,8 +55,8 @@ class MessageModule(BaseModule):
     additional_args = False  # Send to module some additional args such as
                              # original stanza and user acl.
 
-    def __init__(self, bot):
-        super(MessageModule, self).__init__(bot)
+    def __init__(self, bot, config_section=None):
+        super(MessageModule, self).__init__(bot, config_section)
         if self.regexp is not None:
             self.rec = re.compile(self.regexp)
         else:
@@ -76,13 +77,15 @@ class MessageModule(BaseModule):
     def handle(self, msg):
         type_ = msg.getType()
         from_ = msg.getFrom()
+        from_jid = from_.getStripped()
         resource = from_.getResource()
         body = msg.getBody()
         if type_ not in self._all_types or type_ not in self.types:
             return
         # TODO: Subject catch (empty resource).
         if ((not resource) or
-            (type_ == "groupchat" and resource == self._bot.res)):
+            (type_ == "groupchat" and
+             resource == self._bot.confs[from_jid]["nickname"])):
                 return
         if body is None:
             body = ""
@@ -178,3 +181,21 @@ class MessageModule(BaseModule):
         Note that if result string has non-ascii symbols it MUST
         be unicode string.
         """
+
+
+class ConnectModule(BaseModule):
+    """Module which will be started just after
+    connecting bot to server.
+    """
+
+    def run(self):
+        pass
+
+
+class DisconnectModule(BaseModule):
+    """Module which will be started just before
+    bot's disconnect.
+    """
+
+    def run(self):
+        pass

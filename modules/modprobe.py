@@ -23,7 +23,7 @@ class Modprobe(modules.MessageModule):
                 attr = getattr(mod, attr_name)
                 if (type(attr) is type and
                     issubclass(attr, modules.BaseModule)):
-                        module = attr(self._bot)
+                        module = attr(self._bot, module_file)
                         self._bot.modules[module.name] = module
         except Exception:
             error = "FILE: can't load %s" % module_file
