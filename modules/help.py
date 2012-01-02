@@ -10,8 +10,9 @@ class Help(modules.MessageModule):
     def run(self):
         commands = []
         for module in self._bot.modules.values():
-            if isinstance(module, modules.MessageModule):
-                commands.append(module.name)
+            if (isinstance(module, modules.MessageModule) and
+                module.regexp is None):
+                    commands.append(module.name)
         commands.sort()
         commands = ", ".join(commands)
         return utils.trim("""

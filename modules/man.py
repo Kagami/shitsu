@@ -29,14 +29,15 @@ class Man(modules.MessageModule):
         for module in self._bot.modules.values():
             if module.name == command:
                 man = module.run.__doc__
-                if isinstance(module, modules.MessageModule) and man:
-                    man = utils.trim(command + " " + man)
-                    if verbose:
-                        user_acl = kwargs["add"]["user_acl"]
-                        man = ("%s\n\nMinimum access level required: %s\n"
-                               "Your access level: %s" % (
-                                    man, module.acl, user_acl))
-                    return man
+                if (isinstance(module, modules.MessageModule) and man and
+                    module.regexp is None):
+                        man = utils.trim(command + " " + man)
+                        if verbose:
+                            user_acl = kwargs["add"]["user_acl"]
+                            man = ("%s\n\nMinimum access level required: %s\n"
+                                   "Your access level: %s" % (
+                                        man, module.acl, user_acl))
+                        return man
                 else:
-                    return not_found
+                        return not_found
         return not_found
