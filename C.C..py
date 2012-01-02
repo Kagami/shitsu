@@ -25,39 +25,34 @@ import time
 import signal
 import logging
 import traceback
-import xml.parsers.expat
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import xmpp
 import modules.load
-import config
 
 
 class CC(object):
 
-    reconnect_time = 30
     reload_filename_path = os.path.join("tmp", "__reload__")
 
-    def __init__(self, user, rooms, owner):
-        self._done = False
-        self.cl = None
-        self.jid = xmpp.JID(user[0])
-        self.password = user[1]
-        self.res = user[2]
-        self.rooms = list(rooms)
-        self.owner = owner
-
+    def __init__(self):
         logging.basicConfig(
             level=logging.DEBUG,
             format="[%(asctime)s] [%(levelname)s] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S")
         signal.signal(signal.SIGTERM, self.sigterm_handler)
 
+        self._done = False
+        self.cl = None
+        self.cfg = None
+        modules.load.Module("load", self).run()
+        self.res = "nyak"
+        self.rooms = []
+
     def sigterm_handler(self, signum, frame):
         raise SystemExit
 
     def run(self):
-        modules.load.Module("load", self).run()
         while not self._done:
             if os.path.isfile(self.reload_filename_path):
                 os.remove(self.reload_filename_path)
@@ -68,7 +63,7 @@ class CC(object):
                     if self.connect():
                         logging.info("CONNECTION: bot connected")
                     else:
-                        time.sleep(self.reconnect_time)
+                        time.sleep(int(self.cfg.reconnect_time))
                 else:
                     self.cl.Process(1)
             except xmpp.XMLNotWellFormed:
@@ -78,12 +73,16 @@ class CC(object):
                 self.exit("EXIT: interrupted by SIGTERM")
 
     def connect(self):
-        self.cl = xmpp.Client(self.jid.getDomain(), debug = [])
+        jid = xmpp.JID(self.cfg.jid)
+        password = self.cfg.password
+        self.cl = xmpp.Client(jid.getDomain(), debug=[])
         if not self.cl.connect():
             logging.error("CONNECTION: unable to connect to server")
+            self.cl = None
             return
-        if not self.cl.auth(self.jid.getNode(), self.password, self.res):
+        if not self.cl.auth(jid.getNode(), password, jid.getResource()):
             logging.error("CONNECTION: unable to authorize with server")
+            self.cl = None
             return
         for room in self.rooms:
             self.send_join(*room)
@@ -98,12 +97,7 @@ class CC(object):
         for room in self.rooms:
             self.leave(room)
         self.cl.sendPresence(typ="unavailable")
-        try:
-            self.cl.disconnect()
-        except (AttributeError, xml.parsers.expat.ExpatError):
-            # TODO: Why does this happen on disconnect?
-            # %%C.O.: xmpppy is crap%%
-            pass
+        self.cl.disconnect()
         logging.info(msg)
         self._done = True
 
@@ -122,7 +116,7 @@ class CC(object):
         self.send(msg)
 
     def send_join(self, to, password=None):
-        x = xmpp.Node(xmpp.NS_MUC+" x")
+        x = xmpp.Node(xmpp.NS_MUC + " x")
         if password:
             x.addChild("password", payload=password)
         x.addChild("history", attrs={"maxstanzas": "0"})
@@ -155,11 +149,10 @@ class CC(object):
     def presence_handler(self, cl, prs):
         # Allow owner's subscribe.
         if (prs.getType() == "subscribe" and
-            prs.getFrom().getStripped() == self.owner):
+            prs.getFrom().getStripped() == self.cfg.owner_jid):
                 self.send(xmpp.Presence(to=prs.getFrom(), typ="subscribed"))
                 self.send(xmpp.Presence(to=prs.getFrom(), typ="subscribe"))
 
 
-# TODO: Refactor config.
 if __name__ == "__main__":
-    CC(config.user, config.rooms, config.owner).run()
+    CC().run()

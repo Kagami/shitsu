@@ -1,5 +1,5 @@
 *.pyc
 .*.sw*
-config.py
+C.C..cfg
 tmp/*
 !tmp/delete.me

@@ -1,8 +1,0 @@
-# Change default settings and rename this file to config.py
-
-user  = ("bot@jabber.org", "password", "nickname")
-rooms = (
-    ("room1@conference.jabber.ru", ""),
-    ("room2@conference.jabber.org", "room pass"),
-)
-owner = "owner@jabber.org"

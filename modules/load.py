@@ -1,4 +1,5 @@
 import os
+import config
 import modules
 import modules.modprobe
 
@@ -10,9 +11,10 @@ class Module(modules.MessageModule):
 
     def run(self):
         """
-        Load all modules.
+        (Re)load config and modules.
         See also: modprobe, rmmod, lsmod
         """
+        self._bot.cfg = config.Config().get_sect("main")
         self._bot.modules = {}
         modprobe = modules.modprobe.Module("modprobe", self._bot)
         for module_name in os.listdir("modules"):

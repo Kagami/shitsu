@@ -37,12 +37,13 @@ class BaseModule(object):
     def __init__(self, module_name, bot):
         self.name = self.name if self.name else module_name
         self._bot = bot
+        if bot.cfg:
+            self.cfg = bot.cfg._config.get_sect(module_name)
 
 
 class MessageModule(BaseModule):
     """Base class for message modules."""
 
-    prefix = "%"  # TODO: Set it via config.
     use_prefix = True  # Is command should be prefixed.
     acl = ACL_NONE  # Minimum access level required to use command.
     regexp = None  # Command regexp (if not specified match by name).
@@ -64,7 +65,7 @@ class MessageModule(BaseModule):
             self.rec = None
 
     def get_user_acl(self, msg):
-        if msg.getFrom().getStripped() == self._bot.owner:
+        if msg.getFrom().getStripped() == self._bot.cfg.owner_jid:
             return ACL_OWNER
         else:
             return ACL_NONE
@@ -96,9 +97,9 @@ class MessageModule(BaseModule):
                 return
         else:
             if self.use_prefix:
-                if not body.startswith(self.prefix):
+                if not body.startswith(self._bot.cfg.prefix):
                     return
-                body = body[len(self.prefix):]
+                body = body[len(self._bot.cfg.prefix):]
             if not body.startswith(self.name):
                 return
             query = body[len(self.name):]
@@ -158,9 +159,10 @@ class MessageModule(BaseModule):
                 body = resource + ", " + body
         else:
             raise NotImplemented
-        if len(body) > 2000:
-            body = body[:2000] + u"\u2026"
-        if xhtml_body and len(xhtml_body) > 2000:
+        limit = self._bot.cfg.max_message_length
+        if len(body) > limit:
+            body = body[:limit] + u"\u2026"
+        if xhtml_body and len(xhtml_body) > limit:
             # We can't just cut xml.
             xhtml_body = None
         self._bot.send_message(to, type_, body, xhtml_body)
@@ -168,11 +170,14 @@ class MessageModule(BaseModule):
     def run(self, *args):
         """Main module's function.
         Get:
-        match.groups() if module's regexp specified
-        splitted list of arguments otherwise
+        - match.groups() if module's regexp specified
+        - splitted list of arguments otherwise
+        See also module's additional options.
         Return:
-        string (str on unicode) on simple result
-        tuple of 2 strings as result body and xhtml body
-        empty string if nothing should be sended back to user
-        None on invalid syntax
+        - string on simple result
+        - tuple of 2 strings as result body and xhtml body
+        - empty string if nothing should be sended back to user
+        - None on invalid syntax
+        Note that if result string has non-ascii symbols it MUST
+        be unicode string.
         """
