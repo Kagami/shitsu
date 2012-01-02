@@ -73,7 +73,8 @@ class CC(object):
     def connect(self):
         jid = xmpp.JID(self.cfg.jid)
         password = self.cfg.password
-        self.cl = xmpp.Client(jid.getDomain(), debug=[])
+        debug = bool(int(self.cfg.debug))
+        self.cl = xmpp.Client(jid.getDomain(), debug=debug)
         if not self.cl.connect():
             logging.error("CONNECTION: unable to connect to server")
             self.cl = None
