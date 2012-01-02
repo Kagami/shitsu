@@ -1,6 +1,7 @@
 import re
 import json
 import urllib
+from xmpp.simplexml import XMLescape
 import modules
 import utils
 reload(utils)
@@ -41,6 +42,7 @@ class G(modules.MessageModule):
             content_xhtml)
         url = urllib.unquote(str(jres["unescapedUrl"])).decode("utf-8")
         result = "%s\n%s\n%s" % (jres["titleNoFormatting"], content_text, url)
+        url = XMLescape(url)
         result_xhtml = "%s<br />%s<br /><a href='%s'>%s</a>" % (
             jres["titleNoFormatting"], content_xhtml, url, url)
         return result, result_xhtml
