@@ -104,7 +104,10 @@ class CC(object):
                 except Exception:
                     traceback.print_exc()
         self.cl.sendPresence(typ="unavailable")
-        self.cl.disconnect()
+        try:
+            self.cl.disconnect()
+        except AttributeError:
+            pass
         logging.info(msg)
         self._done = True
 
