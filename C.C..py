@@ -28,7 +28,7 @@ import traceback
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import xmpp
-import modules.load
+import modules.core
 
 
 class CC(object):
@@ -45,7 +45,7 @@ class CC(object):
         self._done = False
         self.cl = None
         self.cfg = None
-        modules.load.Load(self).run()
+        modules.core.Load(self).run()
 
     def sigterm_handler(self, signum, frame):
         raise SystemExit
@@ -55,7 +55,7 @@ class CC(object):
             if os.path.isfile(self.reload_filename_path):
                 os.remove(self.reload_filename_path)
                 logging.info("RELOAD")
-                modules.load.Load(self).run()
+                modules.core.Load(self).run()
             try:
                 if self.cl is None:
                     if self.connect():
