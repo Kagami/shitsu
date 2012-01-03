@@ -30,6 +30,10 @@ class Join(modules.MessageModule):
             self._bot.confs[bare] = {
                 "nickname": conf_jid.getResource()
             }
+            if permanent:
+                # TODO: Fix possible race condition.
+                confs = "\n" + "\n".join(self.cfg.conferences.split() + [conf])
+                self.cfg.set("conferences", confs)
             return "joined"
         else:
             confs = []
@@ -57,6 +61,12 @@ class Leave(modules.MessageModule):
             conf_jid.setResource(self._bot.confs[bare]["nickname"])
             self._bot.send_leave(conf_jid)
             del self._bot.confs[bare]
+            if permanent:
+                # TODO: Fix possible race condition.
+                confs = "\n" + "\n".join(filter(
+                    lambda c: not c.startswith(bare),
+                    self.cfg.conferences.split()))
+                self.cfg.set("conferences", confs)
             return "left"
         else:
             return "I'm not in " + jid
