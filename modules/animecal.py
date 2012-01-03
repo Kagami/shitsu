@@ -57,7 +57,7 @@ class A(modules.MessageModule):
             s = "No anime :((("
             anime_list.append(s)
             anime_list_xhtml.append(s)
-        return u"\n".join(anime_list), u"<br />".join(anime_list_xhtml)
+        return "\n".join(anime_list), "<br />".join(anime_list_xhtml)
 
 
 if __name__ == "__main__":

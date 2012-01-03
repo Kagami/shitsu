@@ -156,7 +156,10 @@ class MessageModule(BaseModule):
         elif type_ == "groupchat":
             to = from_jid
             if self.highlight:
-                body = resource + ", " + body
+                prefix = resource + ", "
+                body = prefix + body
+                if xhtml_body:
+                    xhtml_body = prefix + xhtml_body
         else:
             raise NotImplemented
         limit = self._bot.cfg.max_message_length
