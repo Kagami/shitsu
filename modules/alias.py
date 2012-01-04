@@ -2,6 +2,23 @@ import re
 import modules
 
 
+class Aliases(modules.MessageModule):
+
+    args = (0,)
+
+    def run(self):
+        """
+        Show all available aliases.
+        """
+        aliases = []
+        for alias, (value, _, _) in self._bot.aliases.items():
+            aliases.append("%s = %s" % (alias, value))
+        if not aliases:
+            return "no aliases defined"
+        else:
+            return "Aliases:\n" + "\n".join(aliases)
+
+
 class Alias(modules.MessageModule):
 
     acl = modules.ACL_OWNER
@@ -30,10 +47,7 @@ class Alias(modules.MessageModule):
 
     def run(self, query):
         """[cmd[=[command]]]
-        Set/del/show aliases.
-
-        Show all available aliases:
-        %alias
+        Set/del/show alias.
 
         Show alias for %c:
         %alias %c
@@ -53,15 +67,8 @@ class Alias(modules.MessageModule):
         %alias %cjo=%disco $1@conference.jabber.org
         (%cjo room will be expanded as %disco test@conference.jabber.org)
         """
-        # Show all.
         if not query:
-            aliases = []
-            for alias, (value, _, _) in self._bot.aliases.items():
-                aliases.append("%s = %s" % (alias, value))
-            if not aliases:
-                return "no aliases defined"
-            else:
-                return "Aliases:\n" + "\n".join(aliases)
+            return
         # Show.
         if "=" not in query:
             if query in self._bot.aliases:
