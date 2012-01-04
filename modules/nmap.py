@@ -49,7 +49,7 @@ class Nmap(modules.MessageModule):
 
     args = (1,)
 
-    nmap_args = "/usr/bin/env nmap -PN -F -T4 --host-timeout 5s".split()
+    nmap_args = "nmap -PN -F -T4 --host-timeout 5s".split()
 
     def run(self, host):
         """<host>
