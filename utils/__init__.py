@@ -9,6 +9,12 @@ def trim(docstring):
     return "\n".join([line.strip() for line in docstring.splitlines()])
 
 
+private_hosts_re = (
+    r"((www\.)?("
+    r"127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|localhost(\.localdomain)?|"
+    r"192\.168\.[0-9]{1,3}\.[0-9]{1,3}|10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|"
+    r"172\.(1[6-9]|2[0-9]|3[0-1])\.[0-9]{1,3}\.[0-9]{1,3}"
+    r"))")
 default_url_timeout = 3
 default_max_page_size = 1 * 1024 * 1024
 request_headers = {

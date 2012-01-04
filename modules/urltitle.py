@@ -8,13 +8,13 @@ reload(utils)
 
 class Urltitle(modules.MessageModule):
 
-    regexp = r"(https?://[^'\"\s>]+)"
+    regexp = r"(https?://[^'\"\s>]{1,500})"
     types = ("groupchat",)
     highlight = False
 
     max_title_length = 150
-    blacklisted_domains_rec = re.compile(
-        r"https?://(www\.)?(localhost|127\.0\.0\.1)")
+    private_hosts_rec = re.compile(
+        r"^https?://%s(/|:|$)" % utils.private_hosts_re)
     headers_charset_rec = re.compile(r"charset=([^;]{1,20})", re.I)
     meta_charset_rec = re.compile(
         r"<meta\s+[^>]*charset=['\"]?([^'\";\s/>]{1,20})", re.I)
@@ -22,7 +22,7 @@ class Urltitle(modules.MessageModule):
 
     def run(self, url):
         """Print url's title."""
-        if self.blacklisted_domains_rec.match(url):
+        if self.private_hosts_rec.match(url):
             return ""
         result = utils.get_url(url, max_page_size=5000, return_headers=True)
         if not result:

@@ -4,6 +4,7 @@ import traceback
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import xmpp
+import utils
 
 
 class ACL(object):

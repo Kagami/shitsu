@@ -11,7 +11,6 @@ class Google(modules.MessageModule):
 
     raw_query = True
 
-    # TODO: Use new API!
     def run(self, query):
         """<query>
         Google search. Return the first result.
