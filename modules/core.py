@@ -2,7 +2,7 @@ import os
 import imp
 import logging
 import traceback
-import config
+from utils import config
 reload(config)
 import modules
 

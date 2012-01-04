@@ -1,6 +1,6 @@
 import re
 import datetime
-from BeautifulSoup import BeautifulSoup
+from utils.BeautifulSoup import BeautifulSoup
 import modules
 import utils
 reload(utils)
