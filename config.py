@@ -8,7 +8,7 @@ class Config(object):
     get, set and remove options values.
     """
 
-    filename = "C.C..cfg"
+    filename = "cc.cfg"
 
     def __init__(self):
         self._lock = threading.Lock()
