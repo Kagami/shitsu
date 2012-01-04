@@ -19,7 +19,7 @@ class Help(modules.MessageModule):
             Basic bot usage: %%<command> <args>
             Available commands: %s
             Type %%man -v <command> to show command's manual page.
-            Sources and bug tracker: https://github.com/Kagami/C.C.
+            Sources and bug tracker: https://github.com/Kagami/cc
             """ % commands)
 
 
