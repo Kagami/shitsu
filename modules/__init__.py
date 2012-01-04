@@ -1,6 +1,7 @@
 import re
 import logging
 import traceback
+import xmpp
 
 
 class ACL(object):
@@ -38,6 +39,12 @@ class BaseModule(object):
             if not config_section: config_section = self.name
             self.cfg = bot.cfg._config.get_sect(config_section)
 
+    def load(self):
+        """Called on config update."""
+
+    def run(self):
+        """Main module function. All hard work goes here."""
+
 
 class MessageModule(BaseModule):
     """Base class for message modules."""
@@ -73,6 +80,11 @@ class MessageModule(BaseModule):
             return False
         else:
             return True
+
+    def copy_msg(self, msg):
+        # Seem's like there is no copy method.
+        copy = xmpp.simplexml.XML2Node(unicode(msg))
+        return xmpp.Message(node=copy)
 
     def handle(self, msg):
         type_ = msg.getType()
@@ -116,8 +128,9 @@ class MessageModule(BaseModule):
         user_acl = self.get_user_acl(msg)
         if self.is_allowed(user_acl):
             if self.additional_args:
+                msg_copy = self.copy_msg(msg)
                 kwargs = {"add": {
-                    "msg": msg, "user_acl": user_acl},
+                    "msg": msg_copy, "user_acl": user_acl},
                 }
             else:
                 kwargs = {}
@@ -171,7 +184,7 @@ class MessageModule(BaseModule):
         self._bot.send_message(to, type_, body, xhtml_body)
 
     def run(self, *args):
-        """Main module's function.
+        """Main module function.
         Get:
         - match.groups() if module's regexp specified
         - splitted list of arguments otherwise
@@ -191,14 +204,8 @@ class ConnectModule(BaseModule):
     connecting bot to server.
     """
 
-    def run(self):
-        pass
-
 
 class DisconnectModule(BaseModule):
     """Module which will be started just before
     bot's disconnect.
     """
-
-    def run(self):
-        pass

@@ -27,6 +27,8 @@ class Load(modules.MessageModule):
                     continue
             module_name = module_name[:-3]
             modprobe.run(module_name)
+        for module in self._bot.modules.values():
+            module.load()
         return "done"
 
 
@@ -38,8 +40,8 @@ class Modprobe(modules.MessageModule):
     def run(self, module_file):
         """<module_file>
         Load all modules from module's file.
-        For `modules/anime_cal.py' command
-        will looks like `%modprobe anime_cal'.
+        For `modules/animecal.py' command
+        will looks like `%modprobe animecal'.
         See also: load, rmmod, lsmod
         """
         try:
