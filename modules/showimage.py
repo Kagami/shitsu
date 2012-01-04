@@ -2,7 +2,7 @@ import xmpp
 import modules
 
 
-class S(modules.MessageModule):
+class Showimage(modules.MessageModule):
 
     args = (1,)
 

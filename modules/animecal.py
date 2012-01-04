@@ -6,7 +6,7 @@ import utils
 reload(utils)
 
 
-class A(modules.MessageModule):
+class Animecal(modules.MessageModule):
 
     args = (0, 1, 2, 3)
 
@@ -61,7 +61,7 @@ class A(modules.MessageModule):
 
 
 if __name__ == "__main__":
-    (text, xhtml) = A(None).run()
+    (text, xhtml) = Animecal(None).run()
     print text
     print "==="
     print xhtml

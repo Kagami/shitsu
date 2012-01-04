@@ -6,7 +6,7 @@ import utils
 reload(utils)
 
 
-class UrlTitle(modules.MessageModule):
+class Urltitle(modules.MessageModule):
 
     regexp = r"(https?://[^'\"\s>]+)"
     types = ("groupchat",)
@@ -97,7 +97,7 @@ class UrlTitle(modules.MessageModule):
 # Test module.
 if __name__ == "__main__":
     import sys
-    module = UrlTitle(None)
+    module = Urltitle(None)
 
     if len(sys.argv) > 1:
         for url in sys.argv[1:]:

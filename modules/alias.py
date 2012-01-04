@@ -31,14 +31,24 @@ class Alias(modules.MessageModule):
     def run(self, query):
         """[cmd[=[command]]]
         Set/del/show aliases.
-        Usage:
-        %alias           # show all available aliases
-        %alias %c        # show alias for %c
-        %alias %c=%cmd   # set alias %c = %cmd
+
+        Show all available aliases:
+        %alias
+
+        Show alias for %c:
+        %alias %c
+
+        Set alias %c = %cmd:
         (%c will be expanded as %cmd; all args preserved)
-        %alias %c=       # delete alias %c
+        %alias %c=%cmd
+
+        Delete alias %c:
+        %alias %c=
+
         You could also omit prefix if you wish:
-        %alias man=%man  # man will be expanded as %man
+        (man will be expanded as %man)
+        %alias man=%man
+
         You could use $1-$9 magic varaiables to expand command arguments:
         %alias %cjo=%disco $1@conference.jabber.org
         (%cjo room will be expanded as %disco test@conference.jabber.org)

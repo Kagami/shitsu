@@ -1,6 +1,8 @@
 import re
 import logging
 import traceback
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 import xmpp
 
 
@@ -83,7 +85,7 @@ class MessageModule(BaseModule):
 
     def copy_msg(self, msg):
         # Seem's like there is no copy method.
-        copy = xmpp.simplexml.XML2Node(unicode(msg))
+        copy = xmpp.simplexml.XML2Node(unicode(msg).encode("utf-8"))
         return xmpp.Message(node=copy)
 
     def handle(self, msg):

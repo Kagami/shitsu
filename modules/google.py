@@ -7,7 +7,7 @@ import utils
 reload(utils)
 
 
-class G(modules.MessageModule):
+class Google(modules.MessageModule):
 
     raw_query = True
 
