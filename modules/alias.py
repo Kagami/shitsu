@@ -65,7 +65,7 @@ class Alias(modules.MessageModule):
 
         You could use $1-$9 magic varaiables to expand command arguments:
         %alias %cjo=%disco $1@conference.jabber.org
-        (%cjo room will be expanded as %disco test@conference.jabber.org)
+        (`%cjo room' will be expanded as `%disco room@conference.jabber.org')
         """
         if not query:
             return

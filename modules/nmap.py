@@ -22,6 +22,7 @@ def is_host_ok(host):
 class Port(modules.MessageModule):
 
     args = (2,)
+    types = ("groupchat",)
 
     def run(self, host, port):
         """<host> <port>
@@ -48,6 +49,7 @@ class Port(modules.MessageModule):
 class Nmap(modules.MessageModule):
 
     args = (1,)
+    types = ("groupchat",)
 
     nmap_args = "nmap -PN -F -T4 --host-timeout 5s".split()
 
@@ -63,6 +65,6 @@ class Nmap(modules.MessageModule):
                 args, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
             stdout = popen.communicate()[0]
         except OSError:
-            return "Nmap run failed. Does it installed?"
+            return "Nmap run failed. Has it installed?"
         lines = stdout.splitlines()[3:]
         return "\n".join(lines)
