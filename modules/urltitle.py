@@ -29,6 +29,8 @@ class Urltitle(modules.MessageModule):
         (data, headers) = result
         # Get page charset. At first try headers.
         ctype = headers.getheader("Content-Type", "")
+        if not ctype.startswith("text/html"):
+            return ""
         match = self.headers_charset_rec.search(ctype)
         if match and self.is_encoding_exists(match.group(1)):
             charset = match.group(1)
