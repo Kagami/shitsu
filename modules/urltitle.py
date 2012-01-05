@@ -1,6 +1,5 @@
 import re
 import codecs
-import htmlentitydefs
 import modules
 import utils
 reload(utils)
@@ -53,7 +52,7 @@ class Urltitle(modules.MessageModule):
         title = match.group(1).strip()
         title = title.replace("\t", "").replace("\n", " ")
         title = re.sub(r" {2,}", " ", title)
-        title = self.unescape(title)
+        title = utils.unescape(title)
         if len(title) > self.max_title_length:
             title = title[:self.max_title_length] + u"\u2026"
         return "Title: " + title
@@ -66,32 +65,6 @@ class Urltitle(modules.MessageModule):
         else:
             return True
 
-    def unescape(self, text):
-        """Removes HTML or XML character references and
-        entities from a text string.
-        @param text The HTML (or XML) source text.
-        @return The plain text, as a Unicode string, if necessary.
-        Source: http://effbot.org/zone/re-sub.htm#unescape-html
-        """
-        def fixup(m):
-            text = m.group(0)
-            if text[:2] == "&#":
-                # character reference
-                try:
-                    if text[:3] == "&#x":
-                        return unichr(int(text[3:-1], 16))
-                    else:
-                        return unichr(int(text[2:-1]))
-                except ValueError:
-                    pass
-            else:
-                # named entity
-                try:
-                    text = unichr(htmlentitydefs.name2codepoint[text[1:-1]])
-                except KeyError:
-                    pass
-            return text # leave as is
-        return re.sub("&#?\w+;", fixup, text)
 
 
 # Test module.

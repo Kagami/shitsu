@@ -32,16 +32,18 @@ class Google(modules.MessageModule):
         if not jresults:
             return "no results found"
         jres = jresults[0]
-        content_text = jres["content"].replace("   ", "\n")
+        content = utils.unescape(jres["content"])
+        content_text = content.replace("   ", "\n")
         content_text = content_text.replace("<b>", "").replace("</b>", "")
-        content_xhtml = jres["content"].replace("   ", "<br />")
+        content_xhtml = content.replace("   ", "<br />")
         content_xhtml = re.sub(
             r"<b>(.*?)</b>",
             "<span style='font-weight: bold;'>\g<1></span>",
             content_xhtml)
+        title = utils.unescape(jres["titleNoFormatting"])
         url = urllib.unquote(str(jres["unescapedUrl"])).decode("utf-8")
-        result = "%s\n%s\n%s" % (jres["titleNoFormatting"], content_text, url)
+        result = "%s\n%s\n%s" % (title, content_text, url)
         url = XMLescape(url)
         result_xhtml = "%s<br />%s<br /><a href='%s'>%s</a>" % (
-            jres["titleNoFormatting"], content_xhtml, url, url)
+            title, content_xhtml, url, url)
         return result, result_xhtml
