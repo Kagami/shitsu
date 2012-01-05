@@ -70,6 +70,7 @@ class CC(object):
                 self.cl = None
             except (KeyboardInterrupt, SystemExit):
                 self.exit("EXIT: interrupted by SIGTERM")
+        self.cl.disconnect()
 
     def connect(self):
         jid = xmpp.JID(self.cfg.jid)
@@ -105,10 +106,6 @@ class CC(object):
                 except Exception:
                     traceback.print_exc()
         self.cl.sendPresence(typ="unavailable")
-        try:
-            self.cl.disconnect()
-        except AttributeError:
-            pass
         logging.info(msg)
         self._done = True
 
