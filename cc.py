@@ -25,6 +25,7 @@ import time
 import signal
 import logging
 import traceback
+import xml.parsers.expat
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import xmpp
@@ -129,10 +130,15 @@ class CC(object):
         msg = xmpp.Message(to=to, typ=type_, body=body)
         if xhtml_body:
             xhtml = xmpp.Node(xmpp.NS_XHTML_IM + " html")
-            xbody = xmpp.Node("http://www.w3.org/1999/xhtml body")
-            xbody.setPayload([xhtml_body])
-            xhtml.setPayload([xbody])
-            msg.addChild(node=xhtml)
+            body = xhtml.addChild("http://www.w3.org/1999/xhtml body")
+            body.setPayload([xhtml_body])
+            xhtml_s = unicode(xhtml)
+            try:
+                xmpp.simplexml.XML2Node(xhtml_s.encode("utf-8"))
+            except xml.parsers.expat.ExpatError as e:
+                logging.error("PARSER: %s (%s)" % (e, xhtml_s))
+            else:
+                msg.addChild(node=xhtml)
         self.send(msg)
 
     def message_handler(self, cl, msg):
