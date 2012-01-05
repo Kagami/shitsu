@@ -120,7 +120,9 @@ class ProcessAliases(modules.MessageModule):
                     if not dargs:
                         query = ""
                     else:
-                        query = " " + " ".join(dargs.values())
+                        # Dict is orderless, so we should sort it by ourself.
+                        dargs = sorted(dargs.items())
+                        query = " " + " ".join(map(lambda i: i[1], dargs))
                 body = value + query
                 msg = add["msg"]
                 msg.setBody(body)
