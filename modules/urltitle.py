@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import re
 import codecs
 import modules
@@ -12,18 +14,15 @@ class Urltitle(modules.MessageModule):
     highlight = False
 
     max_title_length = 150
-    private_hosts_rec = re.compile(
-        r"^https?://%s(/|:|$)" % utils.private_hosts_re)
     headers_charset_rec = re.compile(r"charset=([^;]{1,20})", re.I)
     meta_charset_rec = re.compile(
         r"<meta\s+[^>]*charset=['\"]?([^'\";\s/>]{1,20})", re.I)
     title_rec = re.compile(r"<title\s*>([^<]{1,300})", re.I)
 
     def run(self, url):
-        """Print url's title."""
-        if self.private_hosts_rec.match(url):
-            return ""
-        result = utils.get_url(url, max_page_size=5000, return_headers=True)
+        """Get url's title."""
+        result = utils.get_url(url, max_page_size=5000, return_headers=True,
+                               forbid_private=True)
         if not result:
             return ""
         (data, headers) = result
@@ -79,11 +78,12 @@ if __name__ == "__main__":
             print url + ": " + module.run(url)
         sys.exit()
     print "localhost:", module.run("http://localhost/")
+    print u"тохо.рф:", module.run(u"http://тохо.рф/")
     print "windows-1251:", module.run("http://www.yermak.com.ua/txt/pol/art_kursk.html")
     print "windpws-1251:", module.run("http://atv.odessa.ua/?t=11803")
-    print "ya.ru:", module.run("http://ya.ru")
-    print "https://ya.ru:", module.run("https://ya.ru")
+    print "ya.ru:", module.run("http://ya.ru/")
     print "youtube:", module.run("http://www.youtube.com/watch?v=ZjFIt78fCxI")
     print "gpl:", module.run("http://www.gnu.org/philosophy/right-to-read.ru.html")
     print "iichan:", module.run("http://iichan.ru/b/")
     print "gelbooru:", module.run("http://gelbooru.com/index.php?page=post&s=view&id=975863")
+    print "https://ya.ru:", module.run("https://ya.ru/")

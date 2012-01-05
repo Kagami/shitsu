@@ -1,22 +1,8 @@
-import re
 import socket
 import subprocess
 import modules
 import utils
 reload(utils)
-
-
-host_rec = re.compile(r"^([-a-z0-9]{1,63}\.)+[-a-z0-9]{1,63}$")
-private_hosts_rec = re.compile(r"^%s$" % utils.private_hosts_re)
-
-def is_host_ok(host):
-    if not host_rec.match(host):
-       return False
-    if private_hosts_rec.match(host):
-        return False
-    if len(host) > 255:
-        return False
-    return True
 
 
 class Port(modules.MessageModule):
@@ -28,8 +14,8 @@ class Port(modules.MessageModule):
         """<host> <port>
         Check host's port.
         """
-        host = host.encode("idna")
-        if not is_host_ok(host):
+        host = utils.fix_host(host, forbid_private=True)
+        if not host:
             return
         try:
             port = int(port)
@@ -37,7 +23,6 @@ class Port(modules.MessageModule):
             return
         if not 0 < port < 65536:
             return
-
         try:
             sock = socket.create_connection((host, port), timeout=3)
         except socket.error:
@@ -58,8 +43,8 @@ class Nmap(modules.MessageModule):
         """<host>
         Scan host with nmap.
         """
-        host = host.encode("idna")
-        if not is_host_ok(host):
+        host = utils.fix_host(host, forbid_private=True)
+        if not host:
             return
         args = self.nmap_args + [host]
         try:
@@ -70,3 +55,14 @@ class Nmap(modules.MessageModule):
             return "Nmap run failed. Has it installed?"
         lines = stdout.splitlines()[3:]
         return "\n".join(lines)
+
+
+# Test module.
+if __name__ == "__main__":
+    module = Nmap(None)
+
+    print module.run("127.0.0.1")
+    print module.run("127.0.3.1")
+    print module.run("192.168.1.5")
+    print module.run("www.localhost")
+    print module.run("172.16.1.1")

@@ -3,6 +3,7 @@ import datetime
 import random
 import socket
 import urllib2
+import urlparse
 import htmlentitydefs
 
 
@@ -11,12 +12,42 @@ def trim(docstring):
     return "\n".join([line.strip() for line in docstring.splitlines()])
 
 
-private_hosts_re = (
-    r"((www\.)?("
+host_rec = re.compile(r"^([-a-z0-9]{1,63}\.)+[-a-z0-9]{1,63}$")
+private_hosts_rec = re.compile(
+    r"^(www\.)?("
     r"127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|localhost(\.localdomain)?|"
     r"192\.168\.[0-9]{1,3}\.[0-9]{1,3}|10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|"
     r"172\.(1[6-9]|2[0-9]|3[0-1])\.[0-9]{1,3}\.[0-9]{1,3}"
-    r"))")
+    r")$")
+
+def fix_host(host, forbid_private=False):
+    """Fix idna hosts.
+    Optionally forbid private hosts.
+    """
+    host = host.encode("idna")
+    if not host_rec.match(host):
+        return
+    if forbid_private and private_hosts_rec.match(host):
+        return
+    if len(host) > 255:
+        return
+    return host
+
+
+def fix_url(url, forbid_private=False):
+    """Fix idna urls."""
+    p = urlparse.urlsplit(url)
+    userpass, at, hostport = p.netloc.partition("@")
+    if not at: userpass, hostport = "", userpass
+    host, colon, port = hostport.partition(":")
+    host = fix_host(p.hostname, forbid_private)
+    if not host:
+        return
+    netloc = "".join([userpass, at, host, colon, port])
+    p2 = urlparse.urlunsplit((p.scheme, netloc, p.path, p.query, p.fragment))
+    return p2.encode("utf-8")
+
+
 default_url_timeout = 3
 default_max_page_size = 1 * 1024 * 1024
 request_headers = {
@@ -24,8 +55,12 @@ request_headers = {
                    "Gecko/20100101 Firefox/9.0")
 }
 
-def get_url(url, max_page_size=default_max_page_size, return_headers=False):
-    request = urllib2.Request(url.encode("utf-8"), None, request_headers)
+def get_url(url, max_page_size=default_max_page_size, return_headers=False,
+            forbid_private=False):
+    url = fix_url(url, forbid_private)
+    if not url:
+        return ""
+    request = urllib2.Request(url, None, request_headers)
     try:
         f = urllib2.urlopen(request, timeout=default_url_timeout)
         data = f.read(max_page_size)
