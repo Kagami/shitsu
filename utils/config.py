@@ -16,7 +16,10 @@ class Config(object):
         self._config.read(self.filename)
         self._opts = {}
         for section in self._config.sections():
-            self._opts[section] = dict(self._config.items(section))
+            items = {}
+            for k, v in self._config.items(section):
+                items[k.decode("utf-8")] = v.decode("utf-8")
+            self._opts[section] = items
 
     def get_sect(self, section):
         return ConfigSection(self, section)
@@ -30,6 +33,8 @@ class Config(object):
     def set(self, section, option, value):
         # Should be thread-safe operation.
         with self._lock:
+            option = option.encode("utf-8")
+            value = value.encode("utf-8")
             if section not in self._opts:
                 self._opts[section] = {}
                 self._config.add_section(section)
