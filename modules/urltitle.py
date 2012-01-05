@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import re
 import codecs
 import modules
@@ -65,25 +63,3 @@ class Urltitle(modules.MessageModule):
             return False
         else:
             return True
-
-
-
-# Test module.
-if __name__ == "__main__":
-    import sys
-    module = Urltitle(None)
-
-    if len(sys.argv) > 1:
-        for url in sys.argv[1:]:
-            print url + ": " + module.run(url)
-        sys.exit()
-    print "localhost:", module.run("http://localhost/")
-    print u"тохо.рф:", module.run(u"http://тохо.рф/")
-    print "windows-1251:", module.run("http://www.yermak.com.ua/txt/pol/art_kursk.html")
-    print "windpws-1251:", module.run("http://atv.odessa.ua/?t=11803")
-    print "ya.ru:", module.run("http://ya.ru/")
-    print "youtube:", module.run("http://www.youtube.com/watch?v=ZjFIt78fCxI")
-    print "gpl:", module.run("http://www.gnu.org/philosophy/right-to-read.ru.html")
-    print "iichan:", module.run("http://iichan.ru/b/")
-    print "gelbooru:", module.run("http://gelbooru.com/index.php?page=post&s=view&id=975863")
-    print "https://ya.ru:", module.run("https://ya.ru/")

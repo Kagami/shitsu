@@ -200,7 +200,7 @@ class MessageModule(BaseModule):
         - empty string if nothing should be sended back to user
         - None on invalid syntax
         Note that if result string has non-ascii symbols it MUST
-        be unicode string.
+        be unicode string. Input args conform the same rule.
         """
 
 

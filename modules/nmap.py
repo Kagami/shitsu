@@ -55,14 +55,3 @@ class Nmap(modules.MessageModule):
             return "Nmap run failed. Has it installed?"
         lines = stdout.splitlines()[3:]
         return "\n".join(lines)
-
-
-# Test module.
-if __name__ == "__main__":
-    module = Nmap(None)
-
-    print module.run("127.0.0.1")
-    print module.run("127.0.3.1")
-    print module.run("192.168.1.5")
-    print module.run("www.localhost")
-    print module.run("172.16.1.1")

@@ -12,30 +12,33 @@ def trim(docstring):
     return "\n".join([line.strip() for line in docstring.splitlines()])
 
 
-host_rec = re.compile(r"^([-a-z0-9]{1,63}\.)+[-a-z0-9]{1,63}$")
+host_rec = re.compile(r"^([-A-Za-z0-9]{1,63}\.)*[-A-Za-z0-9]{1,63}\.?$")
 private_hosts_rec = re.compile(
-    r"^(www\.)?("
+    r"^("
     r"127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|localhost(\.localdomain)?|"
     r"192\.168\.[0-9]{1,3}\.[0-9]{1,3}|10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|"
     r"172\.(1[6-9]|2[0-9]|3[0-1])\.[0-9]{1,3}\.[0-9]{1,3}"
     r")$")
 
 def fix_host(host, forbid_private=False):
-    """Fix idna hosts.
+    """Check validness of hostname and fix idna hosts.
     Optionally forbid private hosts.
     """
-    host = host.encode("idna")
+    if len(host) > 255:
+        return
+    try:
+        host = host.encode("idna")
+    except UnicodeError:
+        return
     if not host_rec.match(host):
         return
     if forbid_private and private_hosts_rec.match(host):
-        return
-    if len(host) > 255:
         return
     return host
 
 
 def fix_url(url, forbid_private=False):
-    """Fix idna urls."""
+    """Check and fix url's hostname via fix_host."""
     p = urlparse.urlsplit(url)
     userpass, at, hostport = p.netloc.partition("@")
     if not at: userpass, hostport = "", userpass
