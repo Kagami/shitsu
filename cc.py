@@ -46,6 +46,7 @@ class CC(object):
         self._done = False
         self.cl = None
         self.cfg = None
+        self.confs = {}
         modules.core.Load(self).run()
 
     def sigterm_handler(self, signum, frame):
@@ -147,11 +148,15 @@ class CC(object):
                     traceback.print_exc()
 
     def presence_handler(self, cl, prs):
-        # Allow owner's subscribe.
-        if (prs.getType() == "subscribe" and
-            prs.getFrom().getStripped() == self.cfg.owner_jid):
-                self.send(xmpp.Presence(to=prs.getFrom(), typ="subscribed"))
-                self.send(xmpp.Presence(to=prs.getFrom(), typ="subscribe"))
+        # TODO: PresenceModule
+        from_ = prs.getFrom()
+        if prs.getType() == "subscribe":
+            if from_ == self.cfg.owner_jid:
+                # Allow owner's subscribe.
+                self.send(xmpp.Presence(to=from_, typ="subscribed"))
+                self.send(xmpp.Presence(to=from_, typ="subscribe"))
+            else:
+                self.send(xmpp.Presence(to=from_, typ="unsubscribed"))
 
 
 if __name__ == "__main__":

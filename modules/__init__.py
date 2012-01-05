@@ -85,7 +85,6 @@ class MessageModule(BaseModule):
             return True
 
     def copy_msg(self, msg):
-        # Seem's like there is no copy method.
         copy = xmpp.simplexml.XML2Node(unicode(msg).encode("utf-8"))
         return xmpp.Message(node=copy)
 
@@ -96,6 +95,9 @@ class MessageModule(BaseModule):
         resource = from_.getResource()
         body = msg.getBody()
         if type_ not in self._all_types or type_ not in self.types:
+            return
+        if type_ == "chat" and (from_jid not in self._bot.confs and
+                                from_jid != self._bot.cfg.owner_jid):
             return
         # TODO: Subject catch (empty resource).
         if ((not resource) or

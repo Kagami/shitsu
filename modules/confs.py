@@ -31,7 +31,6 @@ class Join(modules.MessageModule):
                 "nickname": conf_jid.getResource()
             }
             if permanent:
-                # TODO: Fix possible race condition.
                 confs = "\n" + "\n".join(self.cfg.conferences.split() + [conf])
                 self.cfg.set("conferences", confs)
             return "joined"
@@ -62,7 +61,6 @@ class Leave(modules.MessageModule):
             self._bot.send_leave(conf_jid)
             del self._bot.confs[bare]
             if permanent:
-                # TODO: Fix possible race condition.
                 confs = "\n" + "\n".join(filter(
                     lambda c: not c.startswith(bare),
                     self.cfg.conferences.split()))
@@ -76,7 +74,6 @@ class JoinConfs(modules.ConnectModule):
 
     def run(self):
         join = self._bot.modules["join"]
-        self._bot.confs = {}
         confs = self.cfg.conferences.split()
         for conf in confs:
             join.run(conf, False)
