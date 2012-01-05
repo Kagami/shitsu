@@ -6,7 +6,7 @@ import utils
 reload(utils)
 
 
-host_rec = re.compile(r"^([-a-z0-9]{1,63}\.)+[a-z0-9]{1,63}$")
+host_rec = re.compile(r"^([-a-z0-9]{1,63}\.)+[-a-z0-9]{1,63}$")
 private_hosts_rec = re.compile(r"^%s$" % utils.private_hosts_re)
 
 def is_host_ok(host):
@@ -28,6 +28,7 @@ class Port(modules.MessageModule):
         """<host> <port>
         Check host's port.
         """
+        host = host.encode("idna")
         if not is_host_ok(host):
             return
         try:
@@ -57,6 +58,7 @@ class Nmap(modules.MessageModule):
         """<host>
         Scan host with nmap.
         """
+        host = host.encode("idna")
         if not is_host_ok(host):
             return
         args = self.nmap_args + [host]
