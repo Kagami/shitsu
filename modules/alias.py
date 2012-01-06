@@ -23,6 +23,7 @@ class Alias(modules.MessageModule):
 
     acl = modules.ACL_OWNER
     raw_query = True
+    thread_safe = False
 
     def load(self):
         self._bot.aliases = {}

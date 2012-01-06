@@ -47,6 +47,7 @@ class CC(object):
         self.cl = None
         self.cfg = None
         self.confs = {}
+        self.threads_num = 0
         modules.core.Load(self).run()
 
     def sigterm_handler(self, signum, frame):

@@ -1,6 +1,7 @@
 import re
 import logging
 import traceback
+import threading
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import xmpp
@@ -64,9 +65,14 @@ class MessageModule(BaseModule):
     highlight = True  # Highlight users in groupchats with command's result.
     additional_args = False  # Send to module some additional args such as
                              # original stanza and user acl.
+    thread_safe = True  # Is module thread-safe and can be run multiple
+                        # times in parallel or not.
 
     def __init__(self, bot, config_section=None):
         super(MessageModule, self).__init__(bot, config_section)
+        # Have actual value only if thread is not thread-safe.
+        # Please do not rely up to this otherwise.
+        self._running = False
         if self.regexp is not None:
             self.rec = re.compile(self.regexp)
         else:
@@ -89,6 +95,10 @@ class MessageModule(BaseModule):
         return xmpp.Message(node=copy)
 
     def handle(self, msg):
+        if self._bot.threads_num >= int(self._bot.cfg.max_threads_num):
+            return
+        if not self.thread_safe and self._running:
+            return
         type_ = msg.getType()
         from_ = msg.getFrom()
         from_jid = from_.getStripped()
@@ -131,23 +141,26 @@ class MessageModule(BaseModule):
                     self.send_message(msg, "invalid syntax")
                     return
         user_acl = self.get_user_acl(msg)
-        if self.is_allowed(user_acl):
-            if self.additional_args:
-                msg_copy = self.copy_msg(msg)
-                kwargs = {"add": {
-                    "msg": msg_copy, "user_acl": user_acl},
-                }
-            else:
-                kwargs = {}
-            self.run_and_send_result(msg, *args, **kwargs)
-        else:
+        if not self.is_allowed(user_acl):
             self.send_message(msg, "access denied")
+            return
+        # Run module in thread.
+        args = [msg] + list(args)
+        if self.additional_args:
+            msg_copy = self.copy_msg(msg)
+            kwargs = {"add": {"msg": msg_copy, "user_acl": user_acl}}
+        else:
+            kwargs = {}
+        self._running = True
+        self._bot.threads_num += 1
+        threading.Thread(
+            target=self.run_and_send_result,
+            args=args, kwargs=kwargs).start()
 
     def run_and_send_result(self, msg, *args, **kwargs):
         body = None
         xhtml_body = None
         try:
-            # TODO: Threading.
             result = self.run(*args, **kwargs)
         except Exception:
             error = "MODULE: exception in " + self.name
@@ -163,6 +176,8 @@ class MessageModule(BaseModule):
                 body = result
         if body:
             self.send_message(msg, body, xhtml_body)
+        self._bot.threads_num -= 1
+        self._running = False
 
     def send_message(self, msg, body, xhtml_body=None):
         type_ = msg.getType()

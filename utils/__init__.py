@@ -51,7 +51,7 @@ def fix_url(url, forbid_private=False):
     return p2.encode("utf-8")
 
 
-default_url_timeout = 3
+default_url_timeout = 4
 default_max_page_size = 1 * 1024 * 1024
 request_headers = {
     "User-Agent": ("Mozilla/5.0 (Windows NT 6.1; rv:9.0) "
@@ -59,13 +59,13 @@ request_headers = {
 }
 
 def get_url(url, max_page_size=default_max_page_size, return_headers=False,
-            forbid_private=False):
+            timeout=default_url_timeout, forbid_private=False):
     url = fix_url(url, forbid_private)
     if not url:
         return ""
     request = urllib2.Request(url, None, request_headers)
     try:
-        f = urllib2.urlopen(request, timeout=default_url_timeout)
+        f = urllib2.urlopen(request, timeout=timeout)
         data = f.read(max_page_size)
     except Exception:
         return ""

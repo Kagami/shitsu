@@ -6,6 +6,7 @@ class Join(modules.MessageModule):
 
     acl = modules.ACL_OWNER
     args = (0, 1)
+    thread_safe = False
 
     def run(self, conf=None, permanent=True):
         """[conf]
@@ -48,6 +49,7 @@ class Leave(modules.MessageModule):
 
     acl = modules.ACL_OWNER
     args = (1,)
+    thread_safe = False
 
     def run(self, jid, permanent=True):
         """<jid>
