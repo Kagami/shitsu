@@ -42,8 +42,8 @@ class Urltitle(tests.TestModule):
 
     def test_longtitle(self):
         self.assertEqual(
-            self.run_m("http://gelbooru.com/index.php?page=post&s=view&id=975863"),
-            u"Title: Gelbooru- androgynous bag blush brother and sister brown eyes brown hair covering covering crotch crossdressing frothing green eyes hair ornament hair…")
+            self.run_m("http://gelbooru.com/index.php?page=post&s=view&id=1386757"),
+            u"Title: Gelbooru- 1girl blush book bow breasts capelet cleavage crescent desk dress from above furukawa lemon hair bow hair ribbon hat large breasts long hair…")
 
     def test_idna(self):
         self.assertEqual(
