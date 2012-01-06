@@ -96,21 +96,25 @@ class Vcard(modules.MessageModule):
     @utils.sandbox
     def parse_response(self, cl, resp, msg):
         jid = resp.getFrom().getStripped()
-        result = ""
-        if resp.getType() == "result":
+        if resp.getType() == "error":
+            error = resp.getTag("error")
+            error_info = error.kids[0].name
+            result = "%s vcard:\ngot %s error (%s)" % (
+                jid, error["code"], error_info)
+        else:
             if resp.kids:
                 data = []
                 for node in resp.kids[0].getChildren():
                     if node.name == "PHOTO":
                         data.append("<photo>")
                     else:
-                        data.append(node.name.lower() + ": " +
-                                    node.getCDATA())
+                        cdata = node.getCDATA()
+                        if cdata:
+                            data.append(node.name.lower() + ": " + cdata)
                 if data:
-                    result = "\n".join(data)
+                    result = "\n" + "\n".join(data)
                 else:
                     result = "<empty>"
-        if not result:
-            result = "<no vcard>"
-        result = jid + " vcard:\n" + result
+            else:
+                result = "<no vcard>"
         self.send_message(msg, result)
