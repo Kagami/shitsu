@@ -1,5 +1,3 @@
 *.pyc
 .*.sw*
 cc.cfg
-tmp/*
-!tmp/delete.me
