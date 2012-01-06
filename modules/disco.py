@@ -38,20 +38,16 @@ class Disco(modules.MessageModule):
 
     @utils.sandbox
     def parse_response(self, cl, items, info, msg):
-        print unicode(info)
         jid = info.getFrom().getStripped()
         info_query = info.getTag("query")
-        identify = info_query.getTag("identity")
-        category = identify["category"]
-        name = identify["name"]
+        for i in info_query.getTags("identity"):
+            if i["name"]:
+                name = i["name"]
+                break
         items_list = items.getTag("query").getTags("item")
-        count = len(items_list)
-        if name:
-            description = "\n" + name
-        else:
-            description = ""
-        desc = ""
-        if category == "conference":
+        if "@" in jid:
+            desc = ""
+            count = len(items_list)
             x = info_query.getTag("x", namespace=xmpp.NS_DATA)
             if x:
                 desc_t = x.getTag("field", {"var": "muc#roominfo_description"})
@@ -59,20 +55,26 @@ class Disco(modules.MessageModule):
                     desc_t = desc_t.getTag("value").getData()
                     if desc_t: desc = " (%s)" % desc_t
                 count_t = x.getTag("field", {"var": "muc#roominfo_occupants"})
-                if count_t: count = int(count_t.getTag("value").getData())
-        if "@" in jid:
-            description += "%s\ntotal: %d - " % (desc, count)
-            data = map(lambda i: i["name"], items_list)
-            data = ", ".join(data)
+                if count_t:
+                    count = int(count_t.getTag("value").getData())
+            features = []
+            if info_query.getTag("feature", {"var": "membersonly"}):
+                features.append("membersonly")
+            if features:
+                features = " [%s]" % (", ".join(features))
+            else:
+                features = ""
+            description = "%s%s\ntotal: %d" % (desc, features, count)
+            if items_list:
+                data = map(lambda i: i["name"], items_list)
+                data = description + " - " + ", ".join(data)
+            else:
+                data = description
         else:
-            description += "\n"
-            data = map(lambda i: i["jid"], items_list)
-            if len(data) > 30:
-                data = data[:30] + [u"\u2026"]
-            data = "\n".join(data)
-        result = "%s disco info:%s%s" % (jid, description, data)
+            data = "\n" + "\n".join(map(lambda i: i["jid"], items_list))
+        result = name + data
         self.send_message(msg, result)
-            
+
 
 class Vcard(modules.MessageModule):
 
