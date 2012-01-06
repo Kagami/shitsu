@@ -8,7 +8,7 @@ reload(utils)
 class Port(modules.MessageModule):
 
     args = (2,)
-    types = ("groupchat",)
+    allow_conf_private = False
     thread_safe = False
 
     def run(self, host, port):
@@ -36,7 +36,7 @@ class Port(modules.MessageModule):
 class Nmap(modules.MessageModule):
 
     args = (1,)
-    types = ("groupchat",)
+    allow_conf_private = False
     thread_safe = False
 
     nmap_args = "nmap -PN -T4 --host-timeout 10s".split()

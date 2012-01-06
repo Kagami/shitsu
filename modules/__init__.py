@@ -59,6 +59,8 @@ class MessageModule(BaseModule):
     types = ("chat", "groupchat")  # Process messages only with
                                    # specified types.
     _all_types = ("chat", "groupchat")  # Don't touch this.
+    allow_conf_private = True  # Allow or not module use in private
+                               # conference chats.
     raw_query = False  # If true module will get raw query string.
     args = ()  # List of correct arguments number. (1, 3) means 1 or 3.
                # Empty list means any number.
@@ -70,7 +72,7 @@ class MessageModule(BaseModule):
 
     def __init__(self, bot, config_section=None):
         super(MessageModule, self).__init__(bot, config_section)
-        # Have actual value only if thread is not thread-safe.
+        # Have actual value only if module is not thread-safe.
         # Please do not rely up to this otherwise.
         self._running = False
         if self.regexp is not None:
@@ -97,25 +99,26 @@ class MessageModule(BaseModule):
     def handle(self, msg):
         if self._bot.threads_num >= int(self._bot.cfg.max_threads_num):
             return
-        if not self.thread_safe and self._running:
-            return
         type_ = msg.getType()
         from_ = msg.getFrom()
         from_jid = from_.getStripped()
         resource = from_.getResource()
         body = msg.getBody()
+        if body is None:
+            body = ""
         if type_ not in self._all_types or type_ not in self.types:
             return
-        if type_ == "chat" and (from_jid not in self._bot.confs and
-                                from_jid != self._bot.cfg.owner_jid):
-            return
+        if type_ == "chat":
+            if from_jid in self._bot.confs:
+                if not self.allow_conf_private:
+                    return
+            elif from_jid != self._bot.cfg.owner_jid:
+                return
         # TODO: Subject catch (empty resource).
         if ((not resource) or
             (type_ == "groupchat" and
              resource == self._bot.confs[from_jid]["nickname"])):
                 return
-        if body is None:
-            body = ""
         if self.rec is not None:
             match = self.rec.search(body)
             if match:
@@ -143,6 +146,9 @@ class MessageModule(BaseModule):
         user_acl = self.get_user_acl(msg)
         if not self.is_allowed(user_acl):
             self.send_message(msg, "access denied")
+            return
+        if not self.thread_safe and self._running:
+            self.send_message(msg, "already running")
             return
         # Run module in thread.
         args = [msg] + list(args)
