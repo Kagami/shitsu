@@ -2,6 +2,7 @@ import re
 import random
 import urllib2
 import urlparse
+import traceback
 import htmlentitydefs
 import utils.fix_socket
 reload(utils.fix_socket)
@@ -10,6 +11,15 @@ reload(utils.fix_socket)
 def trim(docstring):
     docstring = docstring.strip()
     return "\n".join([line.strip() for line in docstring.splitlines()])
+
+
+def sandbox(fn):
+    def new(*args, **kwargs):
+        try:
+            fn(*args, **kwargs)
+        except Exception:
+            traceback.print_exc()
+    return new
 
 
 host_rec = re.compile(r"^([-A-Za-z0-9]{1,63}\.)*[-A-Za-z0-9]{1,63}\.?$")

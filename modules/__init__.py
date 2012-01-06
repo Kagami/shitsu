@@ -201,7 +201,7 @@ class MessageModule(BaseModule):
                     xhtml_body = prefix + xhtml_body
         else:
             raise NotImplemented
-        limit = self._bot.cfg.max_message_length
+        limit = int(self._bot.cfg.max_message_length)
         if len(body) > limit:
             body = body[:limit] + u"\u2026"
         if xhtml_body and len(xhtml_body) > limit:
