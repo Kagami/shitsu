@@ -1,5 +1,7 @@
 # coding: utf-8
 
+import datetime
+import utils
 import tests
 
 
@@ -51,6 +53,11 @@ class Urltitle(tests.TestModule):
             u"Title: НЯШКИ ТУТ!")
 
     def test_timeout(self):
+        start = datetime.datetime.now()
         self.assertEqual(
             self.run_m("https://ya.ru/"),
             "")
+        delta = datetime.datetime.now() - start
+        max_timeout = utils.default_url_timeout + 0.1
+        max_delta = datetime.timedelta(seconds=max_timeout)
+        self.assertLess(delta, max_delta)

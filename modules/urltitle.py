@@ -19,7 +19,7 @@ class Urltitle(modules.MessageModule):
 
     def run(self, url):
         """Get url's title."""
-        result = utils.get_url(url, max_page_size=5000, return_headers=True,
+        result = utils.get_url(url, max_page_size=3000, return_headers=True,
                                forbid_private=True)
         if not result:
             return ""
