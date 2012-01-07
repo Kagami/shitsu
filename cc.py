@@ -60,11 +60,15 @@ class CC(object):
                 logging.info("RELOAD")
                 modules.core.Load(self).run()
             try:
-                if self.cl is None:
+                if not self.cl:
                     if self.connect():
                         logging.info("CONNECTION: bot connected")
                     else:
-                        time.sleep(int(self.cfg.reconnect_time))
+                        timeout = int(self.cfg.get("reconnect_time", 10))
+                        logging.info(
+                            "CONNECTION: sleep for %d seconds "
+                            "before reconnect attempt" % timeout)
+                        time.sleep(timeout)
                 else:
                     self.cl.Process(1)
             except xmpp.XMLNotWellFormed:
@@ -72,21 +76,23 @@ class CC(object):
                 self.cl = None
             except (KeyboardInterrupt, SystemExit):
                 self.exit("EXIT: interrupted by SIGTERM")
-        self.cl.disconnect()
+        if self.cl:
+            self.cl.disconnect()
 
     def connect(self):
         jid = xmpp.JID(self.cfg.jid)
         password = self.cfg.password
-        debug = bool(int(self.cfg.debug))
-        self.cl = xmpp.Client(jid.getDomain(), debug=debug)
-        if not self.cl.connect():
-            logging.error("CONNECTION: unable to connect to server")
-            self.cl = None
+        debug = bool(int(self.cfg.get("debug", 0)))
+        cl = xmpp.Client(jid.getDomain(), debug=debug)
+        if not cl.connect():
+            logging.error(
+                "CONNECTION: unable to connect to %s" % jid.getDomain())
             return
-        if not self.cl.auth(jid.getNode(), password, jid.getResource()):
-            logging.error("CONNECTION: unable to authorize with server")
-            self.cl = None
+        if not cl.auth(jid.getNode(), password, jid.getResource()):
+            logging.error("CONNECTION: unable to authorize (check password)")
             return
+        self.cl = cl
+        self.cl.sendPresence()
         for module in self.modules.values():
             if isinstance(module, modules.ConnectModule):
                 try:
@@ -95,24 +101,22 @@ class CC(object):
                     traceback.print_exc()
         self.cl.RegisterHandler("message", self.message_handler)
         self.cl.RegisterHandler("presence", self.presence_handler)
-        self.cl.sendPresence()
         return True
 
     def exit(self, msg="EXIT: by request"):
-        if self.cl is None:
-            return
-        for module in self.modules.values():
-            if isinstance(module, modules.DisconnectModule):
-                try:
-                    module.run()
-                except Exception:
-                    traceback.print_exc()
-        self.cl.sendPresence(typ="unavailable")
+        if self.cl:
+            for module in self.modules.values():
+                if isinstance(module, modules.DisconnectModule):
+                    try:
+                        module.run()
+                    except Exception:
+                        traceback.print_exc()
+            self.cl.sendPresence(typ="unavailable")
         logging.info(msg)
         self._done = True
 
     def send(self, stanza):
-        if not self._done:
+        if self.cl and not self._done:
             self.cl.send(stanza)
 
     def send_join(self, conf_jid, password=None):

@@ -1,10 +1,9 @@
 import os
 import imp
 import logging
-import traceback
+import modules
 from utils import config
 reload(config)
-import modules
 
 
 class Load(modules.MessageModule):
@@ -55,7 +54,7 @@ class Modprobe(modules.MessageModule):
                         self._bot.modules[module.name] = module
         except Exception:
             error = "FILE: can't load %s" % module_file
-            logging.error("%s\n%s" % (error, traceback.format_exc()[:-1]))
+            logging.exception(error)
             return error
         else:
             info = "FILE: %s loaded" % module_file

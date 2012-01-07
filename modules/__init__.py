@@ -1,6 +1,5 @@
 import re
 import logging
-import traceback
 import threading
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -127,9 +126,10 @@ class MessageModule(BaseModule):
                 return
         else:
             if self.use_prefix:
-                if not body.startswith(self._bot.cfg.prefix):
+                prefix = self._bot.cfg.get("prefix", "%")
+                if not body.startswith(prefix):
                     return
-                body = body[len(self._bot.cfg.prefix):]
+                body = body[len(prefix):]
             if not body.startswith(self.name):
                 return
             query = body[len(self.name):]
@@ -170,8 +170,7 @@ class MessageModule(BaseModule):
             result = self.run(*args, **kwargs)
         except Exception:
             error = "MODULE: exception in " + self.name
-            logging.error("%s\n%s" % (
-                error, traceback.format_exc()[:-1]))
+            logging.exception(error)
             body = error
         else:
             if result is None:

@@ -1,3 +1,5 @@
+import sys
+import logging
 import threading
 import ConfigParser
 
@@ -20,6 +22,20 @@ class Config(object):
             for k, v in self._config.items(section):
                 items[k.decode("utf-8")] = v.decode("utf-8")
             self._opts[section] = items
+        self._check_config()
+
+    def _check_config(self):
+        if not "main" in self._opts:
+            self._fail("No main section! Has you set up config?")
+        main = self._opts["main"]
+        if not "jid" in main:
+            self._fail("jid hasn't specified!")
+        if not "password" in main:
+            self._fail("password hasn't specified!")
+
+    def _fail(self, error):
+        logging.critical("CONFIG: %s" % error)
+        sys.exit(1)
 
     def get_sect(self, section):
         return ConfigSection(self, section)

@@ -26,7 +26,7 @@ class Join(modules.MessageModule):
             if bare in self._bot.confs:
                 return "I'm already in this conference"
             if not conf_jid.getResource():
-                conf_jid.setResource(self.cfg.default_nickname)
+                conf_jid.setResource(self.cfg.get("default_nickname", "ccbot"))
             self._bot.send_join(conf_jid, password)
             self._bot.confs[bare] = {
                 "nickname": conf_jid.getResource()
