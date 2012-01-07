@@ -185,28 +185,43 @@ class MessageModule(BaseModule):
         self._bot.threads_num -= 1
         self._running = False
 
-    def send_message(self, msg, body, xhtml_body=None):
-        type_ = msg.getType()
+    def send_message(self, msg, body, xhtml_body=None, type_=None):
+        if not type_: type_ = msg.getType()
         from_ = msg.getFrom()
         from_jid = from_.getStripped()
         resource = from_.getResource()
         if type_ == "chat":
+            # TODO: Several splitted messages.
             to = from_
+            limit = int(self._bot.cfg.get("max_chat_length", 5000))
+            if len(body) > limit:
+                body = body[:limit] + u"\u2026"
+            if xhtml_body and len(xhtml_body) > limit * 2:
+                # We can't just cut xml so throw it.
+                xhtml_body = None
         elif type_ == "groupchat":
             to = from_jid
+            old_body = body
+            old_xhtml = xhtml_body
             if self.highlight:
                 prefix = resource + ", "
                 body = prefix + body
                 if xhtml_body:
                     xhtml_body = prefix + xhtml_body
+            limit = int(self._bot.cfg.get("max_groupchat_length", 1000))
+            too_big = False
+            if len(body) > limit:
+                body = body[:limit] + u"\u2026"
+                too_big = True
+            if xhtml_body and len(xhtml_body) > limit * 2:
+                # We can't just cut xml so throw it.
+                xhtml_body = None
+                too_big = True
+            if too_big:
+                # Send remaining text to private.
+                self.send_message(msg, old_body, old_xhtml, "chat")
         else:
             raise NotImplemented
-        limit = int(self._bot.cfg.max_message_length)
-        if len(body) > limit:
-            body = body[:limit] + u"\u2026"
-        if xhtml_body and len(xhtml_body) > limit:
-            # We can't just cut xml.
-            xhtml_body = None
         self._bot.send_message(to, type_, body, xhtml_body)
 
     def run(self, *args):
