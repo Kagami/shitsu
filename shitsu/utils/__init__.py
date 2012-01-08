@@ -43,10 +43,10 @@ def sandbox(fn):
 host_rec = re.compile(r"^([-A-Za-z0-9]{1,63}\.)*[-A-Za-z0-9]{1,63}\.?$")
 private_hosts_rec = re.compile(
     r"^("
-    r"127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|localhost(\.localdomain)?|"
+    r"127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|localhost(\.localdomain)?\.?|"
     r"192\.168\.[0-9]{1,3}\.[0-9]{1,3}|10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|"
     r"172\.(1[6-9]|2[0-9]|3[0-1])\.[0-9]{1,3}\.[0-9]{1,3}"
-    r")$")
+    r")$", re.I)
 
 def fix_host(host, forbid_private=False):
     """Check validness of hostname and fix idna hosts.

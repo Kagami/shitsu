@@ -1,3 +1,5 @@
+# coding: utf-8
+
 ##################################################
 # shitsu - tiny and flexible xmpp bot framework
 # Copyright (C) 2008-2012 Kagami Hiiragi <kagami@genshiken.org>
@@ -16,8 +18,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##################################################
 
-# coding: utf-8
-
 import tests
 
 
@@ -33,6 +33,8 @@ class Port(tests.TestModule):
         self.assertIsNone(self.run_m(u"172.16.0.0", "80"))
         self.assertIsNone(self.run_m("localhost", "80"))
         self.assertIsNone(self.run_m("localhost.localdomain", "80"))
+        self.assertIsNone(self.run_m("localhost.localdomain.", "80"))
+        self.assertIsNone(self.run_m("lOcAlHoSt.", "80"))
 
     def test_port(self):
         self.assertIsNone(self.run_m("ya.ru", "0"))
@@ -64,6 +66,8 @@ class Nmap(tests.TestModule):
         self.assertIsNone(self.run_m(u"172.16.0.0"))
         self.assertIsNone(self.run_m("localhost"))
         self.assertIsNone(self.run_m("localhost.localdomain"))
+        self.assertIsNone(self.run_m("localhost.localdomain."))
+        self.assertIsNone(self.run_m("lOcAlHoSt."))
 
     def test_badhost(self):
         self.assertIsNone(self.run_m("nyak..ru"))

@@ -1,3 +1,5 @@
+# coding: utf-8
+
 ##################################################
 # shitsu - tiny and flexible xmpp bot framework
 # Copyright (C) 2008-2012 Kagami Hiiragi <kagami@genshiken.org>
@@ -15,8 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##################################################
-
-# coding: utf-8
 
 import datetime
 from shitsu import utils
