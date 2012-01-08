@@ -50,15 +50,14 @@ class Google(modules.MessageModule):
         if not jresults:
             return "no results found"
         jres = jresults[0]
-        content = utils.unescape(jres["content"])
-        content_text = content.replace("   ", "\n")
+        title = jres["titleNoFormatting"]
+        content_text = jres["content"].replace("   ", "\n")
         content_text = content_text.replace("<b>", "").replace("</b>", "")
-        content_xhtml = content.replace("   ", "<br />")
+        content_xhtml = jres["content"].replace("   ", "<br />")
         content_xhtml = re.sub(
             r"<b>(.*?)</b>",
             "<span style='font-weight: bold;'>\g<1></span>",
             content_xhtml)
-        title = utils.unescape(jres["titleNoFormatting"])
         url = urllib.unquote(str(jres["unescapedUrl"])).decode("utf-8")
         result = "%s\n%s\n%s" % (title, content_text, url)
         url = XMLescape(url)
