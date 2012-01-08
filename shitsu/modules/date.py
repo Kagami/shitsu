@@ -1,4 +1,4 @@
-import modules
+from shitsu import modules
 import datetime
 
 

@@ -1,5 +1,5 @@
 import re
-import modules
+from shitsu import modules
 
 
 class Aliases(modules.MessageModule):

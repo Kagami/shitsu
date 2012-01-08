@@ -1,9 +1,9 @@
 import re
 import json
 import urllib
-from xmpp.simplexml import XMLescape
-import modules
-import utils
+from shitsu.xmpp.simplexml import XMLescape
+from shitsu import modules
+from shitsu import utils
 reload(utils)
 
 

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import datetime
-import utils
+from shitsu import utils
 import tests
 
 

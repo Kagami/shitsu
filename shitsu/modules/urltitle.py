@@ -1,7 +1,7 @@
 import re
 import codecs
-import modules
-import utils
+from shitsu import modules
+from shitsu import utils
 reload(utils)
 
 

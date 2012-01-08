@@ -3,8 +3,8 @@ import logging
 import threading
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-import xmpp
-import utils
+from shitsu import xmpp
+from shitsu import utils
 
 
 class ACL(object):

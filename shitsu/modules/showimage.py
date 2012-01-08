@@ -1,5 +1,5 @@
-import xmpp
-import modules
+from shitsu import xmpp
+from shitsu import modules
 
 
 class Showimage(modules.MessageModule):

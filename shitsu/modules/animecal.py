@@ -1,8 +1,8 @@
 import re
 import datetime
-from utils.BeautifulSoup import BeautifulSoup
-import modules
-import utils
+from shitsu.utils.BeautifulSoup import BeautifulSoup
+from shitsu import modules
+from shitsu import utils
 reload(utils)
 
 

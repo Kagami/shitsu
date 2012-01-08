@@ -1,5 +1,5 @@
-import xmpp
-import modules
+from shitsu import xmpp
+from shitsu import modules
 
 
 class Join(modules.MessageModule):
@@ -26,7 +26,8 @@ class Join(modules.MessageModule):
             if bare in self._bot.confs:
                 return "I'm already in this conference"
             if not conf_jid.getResource():
-                conf_jid.setResource(self.cfg.get("default_nickname", "ccbot"))
+                conf_jid.setResource(
+                    self.cfg.get("default_nickname", "shitsu"))
             self._bot.send_join(conf_jid, password)
             self._bot.confs[bare] = {
                 "nickname": conf_jid.getResource()

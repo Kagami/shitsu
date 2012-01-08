@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-
 ##################################################
-# cc - tiny and flexible xmpp bot framework
-# Copyright (C) 2008-2012 Kagami <kagami@genshiken.org>
+# shitsu - tiny and flexible xmpp bot framework
+# Copyright (C) 2008-2012 Kagami Hiiragi <kagami@genshiken.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,8 +17,6 @@
 ##################################################
 
 import os
-import sys
-os.chdir(sys.path[0])
 import time
 import signal
 import logging
@@ -28,37 +24,37 @@ import traceback
 import xml.parsers.expat
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-import xmpp
-import modules.core
+from shitsu import xmpp
+from shitsu import modules
+from shitsu.modules import core
 
 
-class CC(object):
+class ShiTsu(object):
 
-    reload_filename_path = os.path.join("tmp", "__reload__")
-
-    def __init__(self):
+    def __init__(self, options):
         logging.basicConfig(
             level=logging.DEBUG,
             format="[%(asctime)s] [%(levelname)s] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S")
         signal.signal(signal.SIGTERM, self.sigterm_handler)
 
+        self.options = options
         self._done = False
         self.cl = None
         self.cfg = None
         self.confs = {}
         self.threads_num = 0
-        modules.core.Load(self).run()
+        core.Load(self).run()
 
     def sigterm_handler(self, signum, frame):
         raise SystemExit
 
     def run(self):
         while not self._done:
-            if os.path.isfile(self.reload_filename_path):
-                os.remove(self.reload_filename_path)
+            if os.path.isfile(self.options.reload_path):
+                os.remove(self.options.reload_path)
                 logging.info("RELOAD")
-                modules.core.Load(self).run()
+                core.Load(self).run()
             try:
                 if not self.cl:
                     if self.connect():
@@ -82,8 +78,7 @@ class CC(object):
     def connect(self):
         jid = xmpp.JID(self.cfg.jid)
         password = self.cfg.password
-        debug = bool(int(self.cfg.get("debug", 0)))
-        cl = xmpp.Client(jid.getDomain(), debug=debug)
+        cl = xmpp.Client(jid.getDomain(), debug=self.options.debug)
         if not cl.connect():
             logging.error(
                 "CONNECTION: unable to connect to %s" % jid.getDomain())
@@ -162,7 +157,3 @@ class CC(object):
                 self.send(xmpp.Presence(to=from_, typ="subscribe"))
             else:
                 self.send(xmpp.Presence(to=from_, typ="unsubscribed"))
-
-
-if __name__ == "__main__":
-    CC().run()

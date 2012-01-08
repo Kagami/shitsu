@@ -1,6 +1,6 @@
-import xmpp
-import modules
-import utils
+from shitsu import xmpp
+from shitsu import modules
+from shitsu import utils
 reload(utils)
 
 

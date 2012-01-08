@@ -1,8 +1,8 @@
 import os
 import imp
 import logging
-import modules
-from utils import config
+from shitsu import modules
+from shitsu.utils import config
 reload(config)
 
 
@@ -16,10 +16,14 @@ class Load(modules.MessageModule):
         (Re)load config and modules.
         See also: modprobe, rmmod, lsmod
         """
-        self._bot.cfg = config.Config().get_sect("main")
+        path = self._bot.options.config_path
+        self._bot.cfg = config.Config(path).get_sect("main")
         self._bot.modules = {}
         modprobe = Modprobe(self._bot)
-        for module_name in os.listdir("modules"):
+        modules = []
+        for d in self._bot.options.modules_dirs:
+            modules.extend(os.listdir(d))
+        for module_name in modules:
             if (module_name.startswith("_") or
                 module_name.startswith(".") or
                 not module_name.endswith(".py")):
@@ -44,8 +48,8 @@ class Modprobe(modules.MessageModule):
         See also: load, rmmod, lsmod
         """
         try:
-            (file_, path, desc) = imp.find_module(module_file, ["modules"])
-            mod = imp.load_module(module_file, file_, path, desc)
+            info = imp.find_module(module_file, self._bot.options.modules_dirs)
+            mod = imp.load_module(module_file, *info)
             for attr_name in dir(mod):
                 attr = getattr(mod, attr_name)
                 if (type(attr) is type and

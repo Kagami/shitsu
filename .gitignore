@@ -1,3 +1,7 @@
 *.pyc
 .*.sw*
-cc.cfg
+shitsu.cfg
+
+build
+shitsu.egg-info
+dist

@@ -1,5 +1,5 @@
-import modules
-import utils
+from shitsu import modules
+from shitsu import utils
 reload(utils)
 
 
@@ -19,7 +19,7 @@ class Help(modules.MessageModule):
             Basic bot usage: %%<command> <args>
             Available commands: %s
             Type %%man -v <command> to show command's manual page.
-            Sources and bug tracker: https://github.com/Kagami/cc
+            Sources and bug tracker: https://github.com/Kagami/shitsu
             """ % commands)
 
 

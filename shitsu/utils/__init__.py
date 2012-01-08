@@ -4,8 +4,8 @@ import urllib2
 import urlparse
 import traceback
 import htmlentitydefs
-import utils.fix_socket
-reload(utils.fix_socket)
+from shitsu.utils import fix_socket
+reload(fix_socket)
 
 
 def trim(docstring):

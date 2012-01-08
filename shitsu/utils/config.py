@@ -10,12 +10,11 @@ class Config(object):
     get, set and remove options values.
     """
 
-    filename = "cc.cfg"
-
-    def __init__(self):
+    def __init__(self, config_path):
+        self._config_path = config_path
         self._lock = threading.Lock()
         self._config = ConfigParser.RawConfigParser()
-        self._config.read(self.filename)
+        self._config.read(self._config_path)
         self._opts = {}
         for section in self._config.sections():
             items = {}
@@ -56,7 +55,7 @@ class Config(object):
                 self._config.add_section(section)
             self._opts[section][option] = value
             self._config.set(section, option, value)
-            with open(self.filename, "wb") as f:
+            with open(self._config_path, "wb") as f:
                 self._config.write(f)
 
     def remove(self, section, option):
@@ -64,7 +63,7 @@ class Config(object):
         with self._lock:
             del self._opts[section][option]
             self._config.remove_option(section, option)
-            with open(self.filename, "wb") as f:
+            with open(self._config_path, "wb") as f:
                 self._config.write(f)
 
     def items(self, section):
