@@ -113,7 +113,6 @@ class Lsmod(modules.MessageModule):
         Show list of loaded modules.
         See also: load, modprobe, rmmod
         """
-        result = []
         return "Loaded modules: " + ", ".join(self._bot.modules)
 
 

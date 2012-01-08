@@ -31,8 +31,8 @@ setup(
     keywords="xmpp jabber bot framework",
     url="https://github.com/Kagami/shitsu",
     packages=["shitsu", "shitsu.modules", "shitsu.utils", "shitsu.xmpp"],
-    entry_points = {"console_scripts": ["shitsu = shitsu:run"]},
-    package_data = {"": ["shitsu.example.cfg"]},
+    entry_points={"console_scripts": ["shitsu = shitsu:run"]},
+    package_data={"": ["shitsu.example.cfg"]},
     classifiers=[
         "Topic :: Communications",
         "Environment :: Console",
