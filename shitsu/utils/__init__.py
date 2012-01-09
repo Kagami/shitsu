@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##################################################
+# unescape function by Fredrik Lundh
+# <http://effbot.org/zone/re-sub.htm#unescape-html>
+##################################################
 
 import re
 import random
