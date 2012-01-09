@@ -33,7 +33,7 @@ class Port(modules.MessageModule):
         """<host> <port>
         Check host's port.
         """
-        host = utils.fix_host(host, forbid_private=True)
+        host = utils.fix_host(host)
         if not host:
             return
         try:
@@ -63,7 +63,7 @@ class Nmap(modules.MessageModule):
         """<host>
         Scan host with nmap.
         """
-        host = utils.fix_host(host, forbid_private=True)
+        host = utils.fix_host(host)
         if not host:
             return
         args = self.nmap_args + [host]

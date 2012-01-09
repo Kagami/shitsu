@@ -48,7 +48,7 @@ private_hosts_rec = re.compile(
     r"172\.(1[6-9]|2[0-9]|3[0-1])\.[0-9]{1,3}\.[0-9]{1,3}"
     r")$", re.I)
 
-def fix_host(host, forbid_private=False):
+def fix_host(host, forbid_private=True):
     """Check validness of hostname and fix idna hosts.
     Optionally forbid private hosts.
     """
@@ -65,18 +65,19 @@ def fix_host(host, forbid_private=False):
     return host
 
 
-def fix_url(url, forbid_private=False):
+def fix_url(url, forbid_private=True):
     """Check and fix url's hostname via fix_host."""
     p = urlparse.urlsplit(url)
     userpass, at, hostport = p.netloc.partition("@")
     if not at: userpass, hostport = "", userpass
     host, colon, port = hostport.partition(":")
-    host = fix_host(p.hostname, forbid_private)
+    host = fix_host(host, forbid_private)
     if not host:
         return
     netloc = "".join([userpass, at, host, colon, port])
-    p2 = urlparse.urlunsplit((p.scheme, netloc, p.path, p.query, p.fragment))
-    return p2.encode("utf-8")
+    url_out = urlparse.urlunsplit(
+        (p.scheme, netloc, p.path, p.query, p.fragment))
+    return url_out.encode("utf-8")
 
 
 default_url_timeout = 4
@@ -87,7 +88,7 @@ request_headers = {
 }
 
 def get_url(url, max_page_size=default_max_page_size, return_headers=False,
-            timeout=default_url_timeout, forbid_private=False):
+            timeout=default_url_timeout, forbid_private=True):
     url = fix_url(url, forbid_private)
     if not url:
         return ""

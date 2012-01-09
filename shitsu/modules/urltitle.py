@@ -37,8 +37,7 @@ class Urltitle(modules.MessageModule):
 
     def run(self, url):
         """Get url's title."""
-        result = utils.get_url(url, max_page_size=3000, return_headers=True,
-                               forbid_private=True)
+        result = utils.get_url(url, max_page_size=3000, return_headers=True)
         if not result:
             return ""
         (data, headers) = result
@@ -81,3 +80,11 @@ class Urltitle(modules.MessageModule):
             return False
         else:
             return True
+
+
+if __name__ == "__main__":
+    import sys
+    module = Urltitle(None)
+    for url in sys.argv[1:]:
+        url = url.decode("utf-8")
+        print url, ":", module.run(url)
