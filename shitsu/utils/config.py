@@ -49,6 +49,8 @@ class Config(object):
             self._fail("jid hasn't specified!")
         if not "password" in main:
             self._fail("password hasn't specified!")
+        if not "owner_jid" in main:
+            self._fail("owner_jid hasn't specified!")
 
     def _fail(self, error):
         logging.critical("CONFIG: %s" % error)

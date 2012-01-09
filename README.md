@@ -13,20 +13,20 @@ with the main purpose to make it easy to write a module.
 etc. be we will examine the simpliest one.)
 
 * Windows
-    1. get the latest python 2.x from <http://python.org/download/> and install it
-    2. click the zip button at the top of this page, save and unpack
-    3. go to the shitsu/shitsu directory and copy the file shitsu.example.cfg  
-    to shitsu.cfg - there will be your config
+    1. Get the latest python 2.x from <http://python.org/download/> and install it.
+    2. Click the zip button at the top of this page, save and unpack.
+    3. Go to the shitsu/shitsu directory and copy the file shitsu.example.cfg  
+    to shitsu.cfg - there will be your config.
 * Linux (Debian example)
     1. `sudo apt-get install python-pip`
     2. `sudo apt-get install git-core`
     3. `sudo pip install git+https://github.com/Kagami/shitsu.git`
-    4. `shitsu` and answer **y** - shitsu will create stub config in your home folder
+    4. `shitsu` and answer **y** - shitsu will create stub config in your home folder.
 
 ### Configuration
 
-Only **jid** and **password** options required. Other options meant to be  
-self-documenting - read the comments.
+**jid**, **password** and **owner\_jid** options are required.  
+Other options meant to be self-documenting - read the comments.
 
 ### Usage
 
@@ -42,6 +42,10 @@ Additional options can be obtained via **--help** option:
       -d, --debug   print additional debug info
       -r, --reload  reload shitsu's config and modules on the fly
 
+### Bot usage
+
+To start simply send `%help` command to bot from owner's jid.
+
 ### Writing modules
 
 See the [wiki page](https://github.com/Kagami/shitsu/wiki/API).
@@ -53,7 +57,7 @@ Note that shitsu included:
 
 * xmpppy library by Alexey Nezhdanov <http://xmpppy.sourceforge.net/>  
 (GNU GPLv2+) with some minor patches; shitsu.xmpp package
-* BeautifulSoup by Leonard Richardson
+* BeautifulSoup by Leonard Richardson  
 <http://www.crummy.com/software/BeautifulSoup/> (BSD-like);  
 shitsu.utils.BeautifulSoup
 * some code in shitsu.utils package under the BSD-like license  
