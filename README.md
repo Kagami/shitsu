@@ -12,16 +12,16 @@ with the main purpose to make it easy to write a module.
 (There are a lot of methods - setuptools, distribute, pip, virtualenv,  
 etc. be we will examine the simpliest one.)
 
-* Windows
+* **Windows**
     1. Get the latest python 2.x from <http://python.org/download/> and install it.
     2. Click the zip button at the top of this page, save and unpack.
-    3. Go to the shitsu/shitsu directory and copy the file shitsu.example.cfg  
-    to shitsu.cfg - there will be your config.
-* Linux (Debian example)
-    1. `sudo apt-get install python-pip`
-    2. `sudo apt-get install git-core`
-    3. `sudo pip install git+https://github.com/Kagami/shitsu.git`
-    4. `shitsu` and answer **y** - shitsu will create stub config in your home folder.
+    3. Go to the shitsu/shitsu directory and copy the file **shitsu.example.cfg**  
+    to **shitsu.cfg** - there will be your config.
+
+* **Linux (Debian example)**
+    1. `sudo apt-get install python-pip git-core`
+    2. `sudo pip install git+https://github.com/Kagami/shitsu.git`
+    3. `shitsu` and answer **y** - shitsu will create stub config in your home folder.
 
 ### Configuration
 
