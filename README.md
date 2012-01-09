@@ -16,7 +16,7 @@ etc. be we will examine the simpliest one.)
     1. get the latest python 2.x from <http://python.org/download/> and install it
     2. click the zip button at the top of this page, save and unpack
     3. go to the shitsu/shitsu directory and copy the file shitsu.example.cfg  
-    to shitsu.cfg - there will be your config.
+    to shitsu.cfg - there will be your config
 * Linux (Debian example)
     1. `sudo apt-get install python-pip`
     2. `sudo apt-get install git-core`
@@ -44,6 +44,7 @@ Additional options can be obtained via **--help** option:
 
 ### Writing modules
 
+See the [wiki page](https://github.com/Kagami/shitsu/wiki/API).
 
 ### License
 
