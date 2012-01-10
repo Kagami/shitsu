@@ -75,7 +75,6 @@ class MessageModule(BaseModule):
     regexp = None  # Command regexp (if not specified match by name).
     types = ("chat", "groupchat")  # Process messages only with
                                    # specified types.
-    _all_types = ("chat", "groupchat")  # Don't touch this.
     allow_conf_private = True  # Allow or not module use in private
                                # conference chats.
     raw_query = False  # If true module will get raw query string.
@@ -123,7 +122,7 @@ class MessageModule(BaseModule):
         body = msg.getBody()
         if body is None:
             body = ""
-        if type_ not in self._all_types or type_ not in self.types:
+        if type_ not in self.types:
             return
         if type_ == "chat":
             if from_jid in self._bot.confs:

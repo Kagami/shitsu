@@ -95,7 +95,8 @@ class ShiTsu(object):
                     module.run()
                 except Exception:
                     traceback.print_exc()
-        self.cl.RegisterHandler("message", self.message_handler)
+        self.cl.RegisterHandler("message", self.message_handler, "chat")
+        self.cl.RegisterHandler("message", self.message_handler, "groupchat")
         self.cl.RegisterHandler("presence", self.presence_handler)
         self.cl.RegisterHandler("iq", self.iq_handler, "get")
         return True
