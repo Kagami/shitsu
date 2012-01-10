@@ -51,7 +51,7 @@ class Google(modules.MessageModule):
             return "no results found"
         jres = jresults[0]
         title = jres["titleNoFormatting"]
-        content_text = jres["content"].replace("   ", "\n")
+        content_text = utils.unescape(jres["content"]).replace("   ", "\n")
         content_text = content_text.replace("<b>", "").replace("</b>", "")
         content_xhtml = jres["content"].replace("   ", "<br />")
         content_xhtml = re.sub(
@@ -59,7 +59,7 @@ class Google(modules.MessageModule):
             "<span style='font-weight: bold;'>\g<1></span>",
             content_xhtml)
         url = urllib.unquote(str(jres["unescapedUrl"])).decode("utf-8")
-        result = "%s\n%s\n%s" % (title, content_text, url)
+        result = "%s\n%s\n%s" % (utils.unescape(title), content_text, url)
         url = XMLescape(url)
         result_xhtml = "%s<br />%s<br /><a href='%s'>%s</a>" % (
             title, content_xhtml, url, url)
