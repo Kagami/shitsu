@@ -259,11 +259,11 @@ class MessageModule(BaseModule):
 
 class ConnectModule(BaseModule):
     """Module which will be started just after
-    connecting bot to server.
+    connecting to the server.
     """
 
 
 class DisconnectModule(BaseModule):
     """Module which will be started just before
-    bot's disconnect.
+    disconnect.
     """

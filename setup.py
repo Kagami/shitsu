@@ -19,11 +19,12 @@
 ##################################################
 
 from setuptools import setup
+from shitsu import __version__
 
 
 setup(
     name="shitsu",
-    version="0.1",
+    version=__version__,
     license="GNU GPLv3+",
     author="Kagami Hiiragi",
     author_email="kagami@genshiken.org",

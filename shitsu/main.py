@@ -17,6 +17,7 @@
 ##################################################
 
 import os
+import sys
 import time
 import signal
 import logging
@@ -68,7 +69,7 @@ class ShiTsu(object):
                 else:
                     self.cl.Process(1)
             except xmpp.XMLNotWellFormed:
-                logging.error("CONNECTION: reconnect (not valid XML)")
+                logging.error("CONNECTION: reconnect (non-valid XML)")
                 self.cl = None
             except (KeyboardInterrupt, SystemExit):
                 self.exit("EXIT: interrupted by SIGTERM")
@@ -96,6 +97,7 @@ class ShiTsu(object):
                     traceback.print_exc()
         self.cl.RegisterHandler("message", self.message_handler)
         self.cl.RegisterHandler("presence", self.presence_handler)
+        self.cl.RegisterHandler("iq", self.iq_handler, "get")
         return True
 
     def exit(self, msg="EXIT: by request"):
@@ -157,3 +159,15 @@ class ShiTsu(object):
                 self.send(xmpp.Presence(to=from_, typ="subscribe"))
             else:
                 self.send(xmpp.Presence(to=from_, typ="unsubscribed"))
+
+    def iq_handler(self, cl, iq):
+        if iq.getQueryNS() == xmpp.NS_VERSION:
+            # Send bot's version.
+            iq_to = xmpp.Iq("result", xmpp.NS_VERSION, to=iq.getFrom())
+            iq_to.setID(iq.getID())
+            query = iq_to.getTag("query")
+            query.NT.name = "shitsu"
+            query.NT.version = self.options.version
+            query.NT.os = "python " + ".".join(map(str, sys.version_info[:3]))
+            self.send(iq_to)
+            raise xmpp.NodeProcessed

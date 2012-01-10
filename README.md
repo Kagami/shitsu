@@ -5,7 +5,7 @@
 Obviously there are a huge bunch of various jabber bots available  
 but each that I had seen offer a-lot-of-commands rather than cool API.  
 shitsu aims to be pythonic, pep8-compatible, clean and simple framework  
-with the main purpose to make it easy to write a module.
+with the main purpose to make it easy to write a new module for your needs.
 
 ### Installation
 
@@ -38,6 +38,7 @@ Additional options can be obtained via **--help** option:
     Usage: shitsu [options]
 
     Options:
+      --version     show program's version number and exit
       -h, --help    show this help message and exit
       -d, --debug   print additional debug info
       -r, --reload  reload shitsu's config and modules on the fly

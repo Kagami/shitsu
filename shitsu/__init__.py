@@ -16,6 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##################################################
 
+__version__ = "0.1"
+
+
 def run(config_path=None):
     import os.path
     import optparse
@@ -23,28 +26,27 @@ def run(config_path=None):
     from pkg_resources import resource_string
     from shitsu.main import ShiTsu
 
-    parser = optparse.OptionParser()
+    parser = optparse.OptionParser(version=__version__)
     parser.add_option("-d", "--debug", action="store_true",
                       help="print additional debug info")
     parser.add_option("-r", "--reload", action="store_true",
                       help="reload shitsu's config and modules on the fly")
-    (options, out_args) = parser.parse_args()
-    if out_args:
+    (options, args) = parser.parse_args()
+    if args:
         parser.error("uknown options")
 
-    dirname = os.path.dirname(__file__)
-    options.modules_dirs = [os.path.join(dirname, "modules")]
     options.reload_path = os.path.join(
         tempfile.gettempdir(), "__reload_shitsu__")
-
     if options.reload:
         open(options.reload_path, "w").close()
         return
 
+    options.version = __version__
+    options.modules_dirs = [os.path.join(os.path.dirname(__file__), "modules")]
     if not config_path:
         config_dir = os.path.expanduser("~/.shitsu")
-        config_path = os.path.join(config_dir, "shitsu.cfg")
         home_modules = os.path.join(config_dir, "modules")
+        config_path = os.path.join(config_dir, "shitsu.cfg")
         if not os.path.isfile(config_path):
             print ("Config file was not found. "
                    "Create stub in %s ?" % config_path)
