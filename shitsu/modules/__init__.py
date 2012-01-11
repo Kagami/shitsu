@@ -202,6 +202,12 @@ class MessageModule(BaseModule):
         self._running = False
 
     def send_message(self, msg, body, xhtml_body=None, type_=None):
+        """Send message back to user.
+        Arguments: original message node, body, xhtml body (optional),
+        hardly specified returned message type (optional).
+        Check body length, cut long messages, add nickname prefix
+        in groupchats.
+        """
         if not type_: type_ = msg.getType()
         from_ = msg.getFrom()
         from_jid = from_.getStripped()
@@ -240,7 +246,7 @@ class MessageModule(BaseModule):
             raise NotImplemented
         self._bot.send_message(to, type_, body, xhtml_body)
 
-    def run(self, *args):
+    def run(self, *args, **kwargs):
         """Main module function.
         Get:
         - match.groups() if module's regexp specified

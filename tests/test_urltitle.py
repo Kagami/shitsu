@@ -27,7 +27,7 @@ import tests
 class Urltitle(tests.TestModule):
 
     def timeout(seconds):
-        """Helper decorator for check timeout."""
+        """Helper decorator for timeout check."""
         def check_timeout(fn):
             def new(self):
                 start = datetime.datetime.now()

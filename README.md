@@ -7,6 +7,16 @@ but each that I had seen offer a-lot-of-commands rather than cool API.
 shitsu aims to be pythonic, pep8-compatible, clean and simple framework  
 with the main purpose to make it easy to write a new module for your needs.
 
+### Features
+
+* Minimal core: such commands as alias/join/leave implemented as common  
+  modules; even load/modprobe modules could be bootstraped  
+  (you could load your load while you load).
+* Strong xhtml-im focusing - we should use all clients capabilities not  
+  just plain text.
+* Easy installation on both platforms, zero-dependency (except python).
+* Nice API, threading, ACL, ini-style config, aliases out of the box.
+
 ### Installation
 
 (There are a lot of methods - setuptools, distribute, pip, virtualenv,  
