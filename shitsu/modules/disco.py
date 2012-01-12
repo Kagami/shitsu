@@ -76,7 +76,7 @@ class Disco(modules.MessageModule):
                 if count_t:
                     count = int(count_t.getTag("value").getData())
             features = []
-            if info_query.getTag("feature", {"var": "membersonly"}):
+            if info_query.getTag("feature", {"var": "muc_membersonly"}):
                 features.append("membersonly")
             if features:
                 features = " [%s]" % (", ".join(features))
