@@ -45,7 +45,7 @@ class Disco(modules.MessageModule):
         if info.getType() == "error":
             error = info.getTag("error")
             error_info = error.kids[0].name
-            err = "%s disco info:\ngot %s error (%s)" % (
+            err = "%s disco:\ngot %s error (%s)" % (
                 jid, error["code"], error_info)
             self.send_message(msg, err)
             return
@@ -134,7 +134,7 @@ class Vcard(modules.MessageModule):
                 if data:
                     result = "\n" + "\n".join(data)
                 else:
-                    result = "<empty>"
+                    result = "empty"
             else:
-                result = "<no vcard>"
+                result = "no vcard"
         self.send_message(msg, result)
