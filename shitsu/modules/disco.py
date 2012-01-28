@@ -78,6 +78,8 @@ class Disco(modules.MessageModule):
             features = []
             if info_query.getTag("feature", {"var": "muc_membersonly"}):
                 features.append("membersonly")
+            if info_query.getTag("feature", {"var": "muc_passwordprotected"}):
+                features.append("password")
             if features:
                 features = " [%s]" % (", ".join(features))
             else:
