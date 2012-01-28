@@ -37,7 +37,7 @@ class Urltitle(modules.MessageModule):
 
     def run(self, url):
         """Get url's title."""
-        result = utils.get_url(url, max_page_size=3000, return_headers=True)
+        result = utils.get_url(url, max_page_size=10000, return_headers=True)
         if not result:
             return ""
         (data, headers) = result
