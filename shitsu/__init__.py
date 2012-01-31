@@ -23,7 +23,6 @@ def run(config_path=None):
     import os.path
     import optparse
     import tempfile
-    from pkg_resources import resource_string
     from shitsu.main import ShiTsu
 
     parser = optparse.OptionParser(version=__version__)
@@ -55,6 +54,9 @@ def run(config_path=None):
                     os.mkdir(config_dir)
                 if not os.path.isdir(home_modules):
                     os.mkdir(home_modules)
+                # pkg_resources is the part of setuptools and
+                # shouldn't be required in run_without_install case.
+                from pkg_resources import resource_string
                 stub = resource_string(__name__, "shitsu.example.cfg")
                 with open(config_path, "wb") as f:
                     f.write(stub)
